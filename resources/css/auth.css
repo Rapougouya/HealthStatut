@@ -1,0 +1,141 @@
+/* Styles pour le conteneur du formulaire */
+.login-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f7fafc;
+}
+
+.login-left {
+  flex: 1;
+  background-color: #4a5568;
+  color: white;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.login-form-container {
+  max-width: 500px;
+  width: 100%;
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.login-form-container h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.login-subtitle {
+  color: #718096;
+  margin-bottom: 2rem;
+}
+
+/* Styles pour les groupes de formulaire */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #4a5568;
+  outline: none;
+}
+
+/* Styles pour les champs en ligne (nom, prénom, mot de passe, confirmation) */
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Styles pour le bouton de mot de passe */
+.password-input {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.toggle-password i {
+  color: #718096;
+}
+
+/* Styles pour les messages d'erreur */
+.error-message {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Styles pour le bouton de connexion */
+.login-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #4a5568;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background-color: #2d3748;
+}
+
+/* Styles pour le pied de page */
+.login-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #718096;
+}
+
+.login-footer a {
+  color: #4a5568;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}

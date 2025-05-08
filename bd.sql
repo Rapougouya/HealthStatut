@@ -1,0 +1,114 @@
+-- Réalisation sous Oracle
+
+-- Création des tablespaces
+CREATE TABLESPACE TS_PATIENT 
+DATAFILE 'patient_data01.dbf' SIZE 100M 
+AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED;
+
+CREATE TABLESPACE TS_MEDICAL 
+DATAFILE 'medical_data01.dbf' SIZE 100M 
+AUTOEXTEND ON NEXT 50M MAXSIZE UNLIMITED;
+
+-- Tablespace temporaire pour les opérations
+CREATE TEMPORARY TABLESPACE TS_TEMP 
+TEMPFILE 'temp_data01.dbf' SIZE 50M 
+AUTOEXTEND ON NEXT 25M MAXSIZE UNLIMITED;
+
+-- Séquences pour générer des ID uniques
+CREATE SEQUENCE SEQ_PATIENT
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE SEQ_MEDECIN
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE SEQ_FICHIER_MULTIMEDIA
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE SEQ_HISTORIQUE_MEDICAL
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE SEQ_RENDEZ_VOUS
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+
+--Scripts de création des tables
+
+-- Table Patient
+CREATE TABLE PATIENT (
+    id_patient NUMBER DEFAULT SEQ_PATIENT.NEXTVAL PRIMARY KEY,
+    prenom VARCHAR2(50) NOT NULL,
+    nom VARCHAR2(50) NOT NULL,
+    date_naissance DATE,
+    genre VARCHAR2(10),
+    adresse VARCHAR2(200),
+    telephone VARCHAR2(20),
+    email VARCHAR2(100),
+    groupe_sanguin VARCHAR2(5),
+    numero_assurance VARCHAR2(20)
+) TABLESPACE TS_PATIENT;
+
+-- Table Médecin
+CREATE TABLE MEDECIN (
+    id_medecin NUMBER DEFAULT SEQ_MEDECIN.NEXTVAL PRIMARY KEY,
+    prenom VARCHAR2(50) NOT NULL,
+    nom VARCHAR2(50) NOT NULL,
+    specialisation VARCHAR2(100),
+    telephone VARCHAR2(20),
+    email VARCHAR2(100)
+) TABLESPACE TS_MEDICAL;
+
+-- Table Fichiers Multimédia
+CREATE TABLE FICHIER_MULTIMEDIA (
+    id_fichier NUMBER DEFAULT SEQ_FICHIER_MULTIMEDIA.NEXTVAL PRIMARY KEY,
+    id_patient NUMBER,
+    type_fichier VARCHAR2(20) NOT NULL,
+    url_fichier VARCHAR2(200) NOT NULL,
+    nom_fichier VARCHAR2(100) NOT NULL,
+    taille_fichier NUMBER,
+    date_upload DATE DEFAULT SYSDATE,
+    description VARCHAR2(500),
+    categorie VARCHAR2(50),
+    CONSTRAINT fk_patient_media FOREIGN KEY (id_patient) REFERENCES PATIENT(id_patient)
+) TABLESPACE TS_MEDICAL;
+
+-- Table Historique Médical
+CREATE TABLE HISTORIQUE_MEDICAL (
+    id_historique NUMBER DEFAULT SEQ_HISTORIQUE_MEDICAL.NEXTVAL PRIMARY KEY,
+    id_patient NUMBER,
+    id_medecin NUMBER,
+    date_consultation DATE,
+    condition_medicale VARCHAR2(100),
+    description_consultation VARCHAR2(500),
+    traitement VARCHAR2(500),
+    CONSTRAINT fk_patient_hist FOREIGN KEY (id_patient) REFERENCES PATIENT(id_patient),
+    CONSTRAINT fk_medecin_hist FOREIGN KEY (id_medecin) REFERENCES MEDECIN(id_medecin)
+) TABLESPACE TS_MEDICAL;
+
+-- Table Rendez-vous
+CREATE TABLE RENDEZ_VOUS (
+    id_rendez_vous NUMBER DEFAULT SEQ_RENDEZ_VOUS.NEXTVAL PRIMARY KEY,
+    id_patient NUMBER,
+    id_medecin NUMBER,
+    date_rendez_vous DATE,
+    heure_rendez_vous VARCHAR2(10),
+    raison VARCHAR2(200),
+    statut VARCHAR2(20),
+    notes VARCHAR2(500),
+    CONSTRAINT fk_patient_rdv FOREIGN KEY (id_patient) REFERENCES PATIENT(id_patient),
+    CONSTRAINT fk_medecin_rdv FOREIGN KEY (id_medecin) REFERENCES MEDECIN(id_medecin)
+) TABLESPACE TS_MEDICAL;

@@ -1,0 +1,59 @@
+@keyframes slideIn {
+    from { 
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from { 
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+  }
+  
+  @keyframes glowingBorder {
+    0% { box-shadow: 0 0 5px rgba(35, 176, 173, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(35, 176, 173, 0.4); }
+    100% { box-shadow: 0 0 5px rgba(35, 176, 173, 0.2); }
+  }
+  
+  .slide-in {
+    animation: slideIn 0.4s ease forwards;
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.3s ease forwards;
+  }
+  
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+  
+  .shake {
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  .glow {
+    animation: glowingBorder 2s infinite;
+  }
