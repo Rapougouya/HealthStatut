@@ -8,13 +8,36 @@ use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ParametreController extends Controller
 {
     /**
-     * Affiche la page des paramètres
+     * Affiche la page des paramètres utilisateur
      */
     public function index()
+    {
+        // Cette méthode affiche les paramètres personnels de l'utilisateur connecté
+        return view('parametres.index');
+    }
+    
+    /**
+     * Affiche la page d'administration des utilisateurs
+     */
+    public function adminUsers()
+    {
+        $users = User::with(['role', 'service'])->get();
+        $services = Service::all();
+        $roles = Role::all();
+        
+        return view('admin.users.index', compact('users', 'services', 'roles'));
+    }
+
+    /**
+     * Affiche la page d'administration générale
+     */
+    public function adminIndex()
     {
         $users = User::with(['role', 'service'])->get();
         $services = Service::all();
@@ -78,6 +101,47 @@ class ParametreController extends Controller
         return redirect()->route('parametres.index')->with('success', 'Utilisateur mis à jour avec succès.');
     }
 
+      /**
+     * Met à jour le profil de l'utilisateur connecté
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'telephone' => 'nullable|string|max:20',
+            'bio' => 'nullable|string',
+            'avatar' => 'nullable|image|max:2048', // max 2MB
+        ]);
+
+        // Traitement de l'avatar si présent
+        if ($request->hasFile('avatar')) {
+            // Supprimer l'ancien avatar s'il existe
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            
+            // Stocker le nouveau
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $avatarPath;
+        }
+        
+        // Mise à jour des informations de base - Utilisons update() au lieu de save()
+        User::where('id', $user->id)->update([
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+            'email' => $request->email,
+            'telephone' => $request->telephone,
+            'bio' => $request->bio,
+            'avatar' => $user->avatar
+        ]);
+        
+        return redirect()->route('parametres.index')->with('success', 'Profil mis à jour avec succès.');
+    }
+
     /**
      * Active ou désactive un utilisateur
      */
@@ -122,7 +186,7 @@ class ParametreController extends Controller
             'description' => $request->description,
         ]);
 
-        return redirect()->route('parametres.index')->with('success', 'Service créé avec succès.');
+        return redirect()->route('utilisateurs.index')->with('success', 'Service créé avec succès.');
     }
 
     /**
@@ -140,6 +204,6 @@ class ParametreController extends Controller
             'description' => $request->description,
         ]);
 
-        return redirect()->route('parametres.index')->with('success', 'Service mis à jour avec succès.');
+        return redirect()->route('utilisateurs.index')->with('success', 'Service mis à jour avec succès.');
     }
 }

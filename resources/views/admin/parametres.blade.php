@@ -1,891 +1,510 @@
 @extends('layouts.app')
 
-@section('title', 'Paramètres administratifs')
+@section('title', 'Paramètres')
 
 @section('styles')
-<style>
-    .admin-panel {
-        background-color: #f8fafc;
-        border-radius: 0.5rem;
-    }
-    
-    .tab-content {
-        display: none;
-    }
-    
-    .tab-content.active {
-        display: block;
-    }
-    
-    .nav-tabs .nav-link {
-        color: #64748b;
-        border-bottom: 2px solid transparent;
-        padding: 1rem 1.5rem;
-        font-weight: 500;
-        transition: all 0.2s ease-in-out;
-    }
-    
-    .nav-tabs .nav-link:hover {
-        color: #334155;
-        border-color: #94a3b8;
-    }
-    
-    .nav-tabs .nav-link.active {
-        color: #1e40af;
-        border-color: #1e40af;
-    }
-    
-    .card {
-        background: white;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-    
-    .card-header {
-        border-bottom: 1px solid #e2e8f0;
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #f8fafc;
-        border-top-left-radius: 0.5rem;
-        border-top-right-radius: 0.5rem;
-    }
-    
-    .card-header h3 {
-        font-weight: 600;
-        color: #1e293b;
-        margin: 0;
-    }
-    
-    .card-body {
-        padding: 1.5rem;
-    }
-    
-    .btn-admin {
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 500;
-        transition: all 0.2s;
-    }
-    
-    .btn-primary {
-        background-color: #1e40af;
-        color: white;
-    }
-    
-    .btn-primary:hover {
-        background-color: #1e3a8a;
-    }
-    
-    .btn-secondary {
-        background-color: #64748b;
-        color: white;
-    }
-    
-    .btn-secondary:hover {
-        background-color: #475569;
-    }
-    
-    .btn-danger {
-        background-color: #dc2626;
-        color: white;
-    }
-    
-    .btn-danger:hover {
-        background-color: #b91c1c;
-    }
-    
-    .btn-success {
-        background-color: #16a34a;
-        color: white;
-    }
-    
-    .btn-success:hover {
-        background-color: #15803d;
-    }
-    
-    .btn-warning {
-        background-color: #eab308;
-        color: white;
-    }
-    
-    .btn-warning:hover {
-        background-color: #ca8a04;
-    }
-    
-    .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-    
-    .status-active {
-        background-color: #dcfce7;
-        color: #166534;
-    }
-    
-    .status-inactive {
-        background-color: #fee2e2;
-        color: #991b1b;
-    }
-    
-    .form-control {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-    }
-    
-    .form-control:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-    }
-    
-    .form-label {
-        font-weight: 500;
-        color: #374151;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    th {
-        text-align: left;
-        padding: 0.75rem 1.5rem;
-        color: #6b7280;
-        border-bottom: 1px solid #e5e7eb;
-        font-weight: 500;
-    }
-    
-    td {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e5e7eb;
-        vertical-align: middle;
-    }
-    
-    tr:hover {
-        background-color: #f9fafb;
-    }
-    
-    .actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-    
-    .btn-icon {
-        padding: 0.25rem;
-        border-radius: 0.25rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        transition: all 0.2s;
-    }
-    
-    .search-box {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .search-box .form-control {
-        max-width: 300px;
-    }
-    
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        padding: 1rem;
-        overflow-y: auto;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .modal.show {
-        display: flex;
-    }
-    
-    .modal-content {
-        background-color: white;
-        border-radius: 0.5rem;
-        width: 100%;
-        max-width: 600px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    .modal-header {
-        padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .modal-header h4 {
-        margin: 0;
-        font-weight: 600;
-        color: #1e293b;
-    }
-    
-    .modal-body {
-        padding: 1.5rem;
-    }
-    
-    .modal-footer {
-        padding: 1rem;
-        border-top: 1px solid #e5e7eb;
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.5rem;
-    }
-    
-    .close-modal {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #64748b;
-    }
-    
-    .alert {
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 0.375rem;
-    }
-    
-    .alert-success {
-        background-color: #dcfce7;
-        color: #166534;
-    }
-    
-    .alert-danger {
-        background-color: #fee2e2;
-        color: #991b1b;
-    }
-    
-    .alert-warning {
-        background-color: #fef3c7;
-        color: #854d0e;
-    }
-</style>
+    <link rel="stylesheet" href="{{ asset('css/admin-modern.css') }}">
+    <style>
+        .param-header {
+            background: linear-gradient(135deg, var(--secondary), var(--info));
+            color: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+        }
+        
+        .param-card {
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .param-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .param-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+    </style>
 @endsection
 
 @section('content')
-<div class="container mx-auto py-8 px-4">
-    @if (session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
+<div class="admin-container">
+    <div class="param-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title"><i class="ri-settings-4-line"></i> Paramètres</h1>
+                <p class="text-white-50">Configurez vos préférences et personnalisez l'application</p>
+            </div>
+        </div>
     </div>
-    @endif
-    
-    @if (session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
-    @endif
     
     <div class="admin-panel">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold mb-2">Paramètres administratifs</h1>
-            <p class="text-gray-600">Gérez les utilisateurs, les services et les paramètres de l'application</p>
-        </div>
-        
-        <ul class="nav nav-tabs mb-6" id="adminTabs" role="tablist">
+        <ul class="nav nav-tabs" id="paramTabs" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="users-tab" data-toggle="tab" href="#users" role="tab">
-                    <i class="ri-user-line mr-2"></i> Utilisateurs
+                <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab">
+                    <i class="ri-user-line"></i> Profil
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="services-tab" data-toggle="tab" href="#services" role="tab">
-                    <i class="ri-building-line mr-2"></i> Services
+                <a class="nav-link" id="appearance-tab" data-toggle="tab" href="#appearance" role="tab">
+                    <i class="ri-palette-line"></i> Apparence
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="system-tab" data-toggle="tab" href="#system" role="tab">
-                    <i class="ri-settings-line mr-2"></i> Système
+                <a class="nav-link" id="notif-tab" data-toggle="tab" href="#notifications" role="tab">
+                    <i class="ri-notification-line"></i> Notifications
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="security-tab" data-toggle="tab" href="#security" role="tab">
+                    <i class="ri-shield-check-line"></i> Sécurité
                 </a>
             </li>
         </ul>
         
-        <div class="tab-content" id="adminTabContent">
-            <div class="tab-content active" id="users">
-                <div class="card">
+        <div class="tab-content fade-transition" id="paramTabContent">
+            <div class="tab-content active" id="profile">
+                <div class="card admin-card">
                     <div class="card-header">
-                        <h3>Gestion des utilisateurs</h3>
-                        <button id="addUserBtn" class="btn-admin btn-primary">
-                            <i class="ri-user-add-line mr-1"></i> Nouvel utilisateur
-                        </button>
+                        <h3 class="card-title"><i class="ri-user-settings-line"></i> Informations personnelles</h3>
                     </div>
                     <div class="card-body">
-                        <div class="search-box">
-                            <input type="text" id="searchUser" class="form-control" placeholder="Rechercher un utilisateur...">
-                            <select class="form-control" id="filterRole">
-                                <option value="">Tous les rôles</option>
-                                @foreach($roles as $role)
-                                <option value="{{ $role->id }}">{{ $role->nom }}</option>
-                                @endforeach
-                            </select>
-                            <select class="form-control" id="filterService">
-                                <option value="">Tous les services</option>
-                                @foreach($services as $service)
-                                <option value="{{ $service->id }}">{{ $service->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        
-                        <div class="table-responsive">
-                            <table id="usersTable">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Email</th>
-                                        <th>Rôle</th>
-                                        <th>Service</th>
-                                        <th>Statut</th>
-                                        <th>Dernière connexion</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($users as $user)
-                                    <tr>
-                                        <td>{{ $user->nom_complet }}</td>
-                                        <td>{{ $user->email }}</td>
-                                        <td>{{ $user->role->nom ?? 'N/A' }}</td>
-                                        <td>{{ $user->service->name ?? 'N/A' }}</td>
-                                        <td>
-                                            <span class="status-badge {{ $user->statut === 'actif' ? 'status-active' : 'status-inactive' }}">
-                                                {{ ucfirst($user->statut) }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $user->derniere_connexion ? $user->derniere_connexion->format('d/m/Y H:i') : 'Jamais' }}</td>
-                                        <td>
-                                            <div class="actions">
-                                                <button class="btn-icon btn-secondary edit-user" data-id="{{ $user->id }}" data-name="{{ $user->nom }}" data-firstname="{{ $user->prenom }}" data-email="{{ $user->email }}" data-role="{{ $user->role_id }}" data-service="{{ $user->service_id }}">
-                                                    <i class="ri-edit-line"></i>
-                                                </button>
-                                                
-                                                <form action="{{ route('utilisateurs.toggle-status', $user) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    <button type="submit" class="btn-icon {{ $user->statut === 'actif' ? 'btn-warning' : 'btn-success' }}" title="{{ $user->statut === 'actif' ? 'Désactiver' : 'Activer' }} l'utilisateur">
-                                                        <i class="ri-{{ $user->statut === 'actif' ? 'user-unfollow-line' : 'user-follow-line' }}"></i>
-                                                    </button>
-                                                </form>
-                                                
-                                                <form action="{{ route('utilisateurs.reset-password', $user) }}" method="POST" class="inline">
-                                                    @csrf
-                                                    <button type="submit" class="btn-icon btn-warning" title="Réinitialiser le mot de passe">
-                                                        <i class="ri-key-line"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tab-content" id="services">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Gestion des services</h3>
-                        <button id="addServiceBtn" class="btn-admin btn-primary">
-                            <i class="ri-add-line mr-1"></i> Nouveau service
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="search-box">
-                            <input type="text" id="searchService" class="form-control" placeholder="Rechercher un service...">
-                        </div>
-                        
-                        <div class="table-responsive">
-                            <table id="servicesTable">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Description</th>
-                                        <th>Nombre d'utilisateurs</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($services as $service)
-                                    <tr>
-                                        <td>{{ $service->name }}</td>
-                                        <td>{{ $service->description }}</td>
-                                        <td>{{ $service->utilisateurs->count() }}</td>
-                                        <td>
-                                            <div class="actions">
-                                                <button class="btn-icon btn-secondary edit-service" data-id="{{ $service->id }}" data-name="{{ $service->name }}" data-description="{{ $service->description }}">
-                                                    <i class="ri-edit-line"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tab-content" id="system">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Paramètres système</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="systemSettingsForm">
-                            <div class="form-group">
-                                <label class="form-label">Titre de l'application</label>
-                                <input type="text" class="form-control" value="HealthStatut" disabled>
-                                <small class="text-muted">Contactez l'administrateur système pour modifier ce paramètre</small>
-                            </div>
+                        <form id="profileForm" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
                             
-                            <div class="form-group">
-                                <label class="form-label">Maintenance planifiée</label>
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="maintenanceMode"> 
-                                    <label for="maintenanceMode" class="ml-2">Activer le mode maintenance</label>
+                            <div class="d-flex mb-4 align-items-center">
+                                <div class="me-4">
+                                    <div class="avatar" style="width: 100px; height: 100px; font-size: 2rem;">
+                                        @if(auth()->user()->avatar)
+                                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->nom }}">
+                                        @else
+                                            {{ strtoupper(substr(auth()->user()->prenom, 0, 1) . substr(auth()->user()->nom, 0, 1)) }}
+                                        @endif
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1">{{ auth()->user()->nom_complet }}</h4>
+                                    <p class="text-muted mb-2">{{ auth()->user()->role->nom }} - {{ auth()->user()->service->name }}</p>
+                                    <div class="d-flex gap-2">
+                                        <label class="btn btn-sm btn-outline-primary">
+                                            <i class="ri-upload-2-line"></i> Changer la photo
+                                            <input type="file" name="avatar" style="display: none">
+                                        </label>
+                                        <button type="button" class="btn btn-sm btn-outline-danger">
+                                            <i class="ri-delete-bin-line"></i> Supprimer
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div id="maintenanceOptions" style="display: none;">
-                                <div class="form-group">
-                                    <label class="form-label">Date de début</label>
-                                    <input type="datetime-local" class="form-control">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="nom" class="form-label">Nom</label>
+                                        <input type="text" id="nom" name="nom" class="form-control" value="{{ auth()->user()->nom }}">
+                                    </div>
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">Durée estimée (heures)</label>
-                                    <input type="number" class="form-control" min="1" value="1">
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">Message de maintenance</label>
-                                    <textarea class="form-control" rows="3">Le système est actuellement en maintenance. Veuillez réessayer ultérieurement.</textarea>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="prenom" class="form-label">Prénom</label>
+                                        <input type="text" id="prenom" name="prenom" class="form-control" value="{{ auth()->user()->prenom }}">
+                                    </div>
                                 </div>
                             </div>
                             
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" id="email" name="email" class="form-control" value="{{ auth()->user()->email }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="telephone" class="form-label">Téléphone</label>
+                                        <input type="tel" id="telephone" name="telephone" class="form-control" value="{{ auth()->user()->telephone ?? '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label for="bio" class="form-label">Bio</label>
+                                <textarea id="bio" name="bio" class="form-control" rows="3">{{ auth()->user()->bio ?? '' }}</textarea>
+                            </div>
+                            
                             <div class="form-group">
-                                <button type="submit" class="btn-admin btn-primary">Enregistrer les modifications</button>
+                                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                             </div>
                         </form>
-                        
-                        <hr class="my-6">
-                        
-                        <div class="mb-6">
-                            <h4 class="text-xl font-semibold mb-4">Actions système</h4>
-                            
-                            <div class="space-y-4">
-                                <div class="card p-4 bg-gray-50">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <h5 class="font-semibold">Vider le cache</h5>
-                                            <p class="text-gray-600">Effacer le cache de l'application pour appliquer les dernières modifications</p>
-                                        </div>
-                                        <button class="btn-admin btn-secondary">Exécuter</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="appearance">
+                <div class="card admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="ri-palette-line"></i> Personnalisation de l'interface</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="appearanceForm">
+                            <div class="mb-4">
+                                <label class="form-label">Thème</label>
+                                <div class="d-flex gap-4 mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="theme" id="themeLight" value="light" checked>
+                                        <label class="form-check-label" for="themeLight">
+                                            Clair
+                                        </label>
                                     </div>
-                                </div>
-                                
-                                <div class="card p-4 bg-gray-50">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <h5 class="font-semibold">Sauvegarde de la base de données</h5>
-                                            <p class="text-gray-600">Créer une sauvegarde complète de la base de données</p>
-                                        </div>
-                                        <button class="btn-admin btn-secondary">Exécuter</button>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="theme" id="themeDark" value="dark">
+                                        <label class="form-check-label" for="themeDark">
+                                            Sombre
+                                        </label>
                                     </div>
-                                </div>
-                                
-                                <div class="card p-4 bg-yellow-50">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <h5 class="font-semibold text-yellow-800">Réinitialiser les préférences</h5>
-                                            <p class="text-yellow-800">Réinitialiser toutes les préférences utilisateurs aux valeurs par défaut</p>
-                                        </div>
-                                        <button class="btn-admin btn-warning">Exécuter</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="card p-4 bg-red-50">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            <h5 class="font-semibold text-red-800">Purger les données temporaires</h5>
-                                            <p class="text-red-800">Supprimer toutes les données temporaires et les fichiers de journalisation</p>
-                                        </div>
-                                        <button class="btn-admin btn-danger">Exécuter</button>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="theme" id="themeSystem" value="system">
+                                        <label class="form-check-label" for="themeSystem">
+                                            Système
+                                        </label>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Couleur principale</label>
+                                <div class="d-flex gap-3 mb-3">
+                                    <div class="color-option active" style="background-color: #6366f1;"></div>
+                                    <div class="color-option" style="background-color: #3b82f6;"></div>
+                                    <div class="color-option" style="background-color: #10b981;"></div>
+                                    <div class="color-option" style="background-color: #f59e0b;"></div>
+                                    <div class="color-option" style="background-color: #ef4444;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Disposition</label>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <div class="layout-option active p-3 border rounded">
+                                            <div class="layout-preview mb-2" style="height: 100px; background-color: #f1f5f9; position: relative;">
+                                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background-color: #e2e8f0;"></div>
+                                                <div style="position: absolute; right: 0; top: 0; left: 30%; height: 20%; background-color: #cbd5e1;"></div>
+                                            </div>
+                                            <div class="text-center">Standard</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="layout-option p-3 border rounded">
+                                            <div class="layout-preview mb-2" style="height: 100px; background-color: #f1f5f9; position: relative;">
+                                                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 20%; background-color: #cbd5e1;"></div>
+                                                <div style="position: absolute; left: 0; top: 20%; bottom: 0; width: 30%; background-color: #e2e8f0;"></div>
+                                            </div>
+                                            <div class="text-center">Horizontal</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="layout-option p-3 border rounded">
+                                            <div class="layout-preview mb-2" style="height: 100px; background-color: #f1f5f9; position: relative;">
+                                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 20%; background-color: #e2e8f0;"></div>
+                                                <div style="position: absolute; right: 0; top: 0; left: 20%; height: 20%; background-color: #cbd5e1;"></div>
+                                            </div>
+                                            <div class="text-center">Compact</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label class="form-label">Taille du texte</label>
+                                <input type="range" class="form-range" min="80" max="120" step="5" value="100" id="fontSizeRange">
+                                <div class="d-flex justify-content-between">
+                                    <span>Petit</span>
+                                    <span>Normal</span>
+                                    <span>Grand</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Appliquer</button>
+                                <button type="reset" class="btn btn-secondary">Réinitialiser</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="notifications">
+                <div class="card admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="ri-notification-line"></i> Préférences de notification</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="notificationsForm">
+                            <div class="mb-4">
+                                <h5 class="mb-3">Notifications par email</h5>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailAlerts" checked>
+                                    <label class="form-check-label" for="emailAlerts">
+                                        Alertes patients
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailAppointments" checked>
+                                    <label class="form-check-label" for="emailAppointments">
+                                        Rappels de rendez-vous
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailSystem">
+                                    <label class="form-check-label" for="emailSystem">
+                                        Annonces système
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5 class="mb-3">Notifications dans l'application</h5>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="appAlerts" checked>
+                                    <label class="form-check-label" for="appAlerts">
+                                        Alertes patients
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="appAppointments" checked>
+                                    <label class="form-check-label" for="appAppointments">
+                                        Rappels de rendez-vous
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="appMessages" checked>
+                                    <label class="form-check-label" for="appMessages">
+                                        Nouveaux messages
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="appSystem" checked>
+                                    <label class="form-check-label" for="appSystem">
+                                        Annonces système
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5 class="mb-3">Fréquence des notifications</h5>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="notifFrequency" id="freqRealtime" value="realtime" checked>
+                                    <label class="form-check-label" for="freqRealtime">
+                                        Temps réel
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="notifFrequency" id="freqHourly" value="hourly">
+                                    <label class="form-check-label" for="freqHourly">
+                                        Résumé horaire
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="notifFrequency" id="freqDaily" value="daily">
+                                    <label class="form-check-label" for="freqDaily">
+                                        Résumé quotidien
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Enregistrer les préférences</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="security">
+                <div class="card admin-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="ri-shield-check-line"></i> Sécurité du compte</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="mb-4">Changer le mot de passe</h5>
+                        <form id="passwordForm">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Mot de passe actuel</label>
+                                <input type="password" class="form-control" id="currentPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Nouveau mot de passe</label>
+                                <input type="password" class="form-control" id="newPassword" required>
+                                <div class="password-strength mt-2">
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <small class="text-muted">Force: <span id="passwordStrength">Faible</span></small>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label">Confirmer le nouveau mot de passe</label>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Mettre à jour le mot de passe</button>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="mb-4">Authentification à deux facteurs</h5>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span>Statut 2FA:</span>
+                                <span class="badge badge-danger">Désactivé</span>
+                            </div>
+                            <p class="text-muted">L'authentification à deux facteurs ajoute une couche de sécurité supplémentaire à votre compte en demandant un code temporaire en plus de votre mot de passe.</p>
+                            <button type="button" class="btn btn-outline-primary">Activer l'authentification à deux facteurs</button>
                         </div>
                         
-                        <hr class="my-6">
+                        <hr class="my-4">
                         
-                        <div>
-                            <h4 class="text-xl font-semibold mb-4">Informations système</h4>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p class="flex justify-between">
-                                        <span class="font-medium">Version de l'application:</span>
-                                        <span>1.5.2</span>
-                                    </p>
-                                    <p class="flex justify-between">
-                                        <span class="font-medium">Dernière mise à jour:</span>
-                                        <span>{{ now()->format('d/m/Y') }}</span>
-                                    </p>
-                                    <p class="flex justify-between">
-                                        <span class="font-medium">Environnement:</span>
-                                        <span>{{ ucfirst(app()->environment()) }}</span>
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="flex justify-between">
-                                        <span class="font-medium">Version PHP:</span>
-                                        <span>{{ phpversion() }}</span>
-                                    </p>
-                                    <p class="flex justify-between">
-                                        <span class="font-medium">Version Laravel:</span>
-                                        <span>{{ app()->version() }}</span>
-                                    </p>
-                                    <p class="flex justify-between">
-                                        <span class="font-medium">Serveur:</span>
-                                        <span>{{ $_SERVER['SERVER_SOFTWARE'] ?? 'N/A' }}</span>
-                                    </p>
-                                </div>
-                            </div>
+                        <h5 class="mb-4">Sessions actives</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Appareil</th>
+                                        <th>Localisation</th>
+                                        <th>Dernière activité</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="ri-computer-line me-2 text-primary"></i>
+                                                Windows 10 - Chrome
+                                            </div>
+                                        </td>
+                                        <td>Paris, France</td>
+                                        <td>Actuellement</td>
+                                        <td><span class="badge badge-success">Session courante</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="ri-smartphone-line me-2 text-secondary"></i>
+                                                iPhone - Safari
+                                            </div>
+                                        </td>
+                                        <td>Paris, France</td>
+                                        <td>Il y a 2 jours</td>
+                                        <td><button class="btn btn-sm btn-outline-danger">Déconnecter</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Ajouter/Modifier Utilisateur -->
-<div id="userModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h4 id="userModalTitle">Ajouter un utilisateur</h4>
-            <button type="button" class="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="userForm" action="{{ route('utilisateurs.store') }}" method="POST">
-                @csrf
-                <input type="hidden" id="userId" name="user_id">
-                <div class="form-group">
-                    <label for="nom" class="form-label">Nom</label>
-                    <input type="text" id="nom" name="nom" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="prenom" class="form-label">Prénom</label>
-                    <input type="text" id="prenom" name="prenom" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" name="email" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="role_id" class="form-label">Rôle</label>
-                    <select id="role_id" name="role_id" class="form-control" required>
-                        <option value="">Sélectionner un rôle</option>
-                        @foreach($roles as $role)
-                        <option value="{{ $role->id }}">{{ $role->nom }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="service_id" class="form-label">Service</label>
-                    <select id="service_id" name="service_id" class="form-control" required>
-                        <option value="">Sélectionner un service</option>
-                        @foreach($services as $service)
-                        <option value="{{ $service->id }}">{{ $service->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-admin btn-secondary close-modal-btn">Annuler</button>
-            <button type="button" id="saveUserBtn" class="btn-admin btn-primary">Enregistrer</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Ajouter/Modifier Service -->
-<div id="serviceModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h4 id="serviceModalTitle">Ajouter un service</h4>
-            <button type="button" class="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="serviceForm" action="{{ route('services.store') }}" method="POST">
-                @csrf
-                <input type="hidden" id="serviceId" name="service_id">
-                <div class="form-group">
-                    <label for="name" class="form-label">Nom du service</label>
-                    <input type="text" id="serviceName" name="name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea id="serviceDescription" name="description" class="form-control" rows="3"></textarea>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-admin btn-secondary close-modal-btn">Annuler</button>
-            <button type="button" id="saveServiceBtn" class="btn-admin btn-primary">Enregistrer</button>
         </div>
     </div>
 </div>
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Gestion des onglets
-        const tabs = document.querySelectorAll('.nav-link');
-        tabs.forEach(function(tab) {
-            tab.addEventListener('click', function(event) {
-                event.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                
-                // Désactiver tous les onglets et contenu
-                tabs.forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                
-                // Activer l'onglet cliqué et son contenu
-                this.classList.add('active');
-                target.classList.add('active');
+    <script src="{{ asset('js/admin-modern.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion du changement de thème
+            const themeRadios = document.querySelectorAll('input[name="theme"]');
+            themeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.documentElement.setAttribute('data-theme', this.value);
+                });
             });
-        });
-        
-        // Gestion des modals
-        const modals = document.querySelectorAll('.modal');
-        const closeButtons = document.querySelectorAll('.close-modal, .close-modal-btn');
-        
-        // Fonction pour ouvrir une modal
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        // Fonction pour fermer une modal
-        function closeModal() {
-            modals.forEach(modal => {
-                modal.classList.remove('show');
-            });
-            document.body.style.overflow = '';
-        }
-        
-        // Fermer les modals
-        closeButtons.forEach(button => {
-            button.addEventListener('click', closeModal);
-        });
-        
-        // Fermer la modal si on clique en dehors
-        modals.forEach(modal => {
-            modal.addEventListener('click', function(event) {
-                if (event.target === this) {
-                    closeModal();
-                }
-            });
-        });
-        
-        // Bouton "Nouvel utilisateur"
-        document.getElementById('addUserBtn').addEventListener('click', function() {
-            document.getElementById('userModalTitle').textContent = 'Ajouter un utilisateur';
-            document.getElementById('userForm').reset();
-            document.getElementById('userForm').setAttribute('action', '{{ route("utilisateurs.store") }}');
-            document.getElementById('userForm').setAttribute('method', 'POST');
-            openModal('userModal');
-        });
-        
-        // Bouton "Enregistrer" utilisateur
-        document.getElementById('saveUserBtn').addEventListener('click', function() {
-            document.getElementById('userForm').submit();
-        });
-        
-        // Boutons "Modifier" utilisateur
-        document.querySelectorAll('.edit-user').forEach(button => {
-            button.addEventListener('click', function() {
-                const userId = this.getAttribute('data-id');
-                const userNom = this.getAttribute('data-name');
-                const userPrenom = this.getAttribute('data-firstname');
-                const userEmail = this.getAttribute('data-email');
-                const userRole = this.getAttribute('data-role');
-                const userService = this.getAttribute('data-service');
-                
-                document.getElementById('userModalTitle').textContent = 'Modifier un utilisateur';
-                document.getElementById('userId').value = userId;
-                document.getElementById('nom').value = userNom;
-                document.getElementById('prenom').value = userPrenom;
-                document.getElementById('email').value = userEmail;
-                document.getElementById('role_id').value = userRole;
-                document.getElementById('service_id').value = userService;
-                
-                document.getElementById('userForm').setAttribute('action', `{{ url('utilisateurs') }}/${userId}`);
-                document.getElementById('userForm').setAttribute('method', 'POST');
-                
-                // Ajouter method PUT
-                let methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'PUT';
-                document.getElementById('userForm').appendChild(methodInput);
-                
-                openModal('userModal');
-            });
-        });
-        
-        // Bouton "Nouveau service"
-        document.getElementById('addServiceBtn').addEventListener('click', function() {
-            document.getElementById('serviceModalTitle').textContent = 'Ajouter un service';
-            document.getElementById('serviceForm').reset();
-            document.getElementById('serviceForm').setAttribute('action', '{{ route("services.store") }}');
-            document.getElementById('serviceForm').setAttribute('method', 'POST');
-            openModal('serviceModal');
-        });
-        
-        // Bouton "Enregistrer" service
-        document.getElementById('saveServiceBtn').addEventListener('click', function() {
-            document.getElementById('serviceForm').submit();
-        });
-        
-        // Boutons "Modifier" service
-        document.querySelectorAll('.edit-service').forEach(button => {
-            button.addEventListener('click', function() {
-                const serviceId = this.getAttribute('data-id');
-                const serviceName = this.getAttribute('data-name');
-                const serviceDescription = this.getAttribute('data-description');
-                
-                document.getElementById('serviceModalTitle').textContent = 'Modifier un service';
-                document.getElementById('serviceId').value = serviceId;
-                document.getElementById('serviceName').value = serviceName;
-                document.getElementById('serviceDescription').value = serviceDescription;
-                
-                document.getElementById('serviceForm').setAttribute('action', `{{ url('services') }}/${serviceId}`);
-                document.getElementById('serviceForm').setAttribute('method', 'POST');
-                
-                // Ajouter method PUT
-                let methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'PUT';
-                document.getElementById('serviceForm').appendChild(methodInput);
-                
-                openModal('serviceModal');
-            });
-        });
-        
-        // Recherche d'utilisateurs
-        document.getElementById('searchUser').addEventListener('keyup', function() {
-            const searchValue = this.value.toLowerCase();
-            filterUsers(searchValue, null, null);
-        });
-        
-        // Filtre par rôle
-        document.getElementById('filterRole').addEventListener('change', function() {
-            const roleValue = this.value;
-            const searchValue = document.getElementById('searchUser').value.toLowerCase();
-            const serviceValue = document.getElementById('filterService').value;
-            filterUsers(searchValue, roleValue, serviceValue);
-        });
-        
-        // Filtre par service
-        document.getElementById('filterService').addEventListener('change', function() {
-            const serviceValue = this.value;
-            const searchValue = document.getElementById('searchUser').value.toLowerCase();
-            const roleValue = document.getElementById('filterRole').value;
-            filterUsers(searchValue, roleValue, serviceValue);
-        });
-        
-        // Fonction de filtrage des utilisateurs
-        function filterUsers(searchValue, roleValue, serviceValue) {
-            const rows = document.querySelectorAll('#usersTable tbody tr');
             
-            rows.forEach(row => {
-                const name = row.cells[0].textContent.toLowerCase();
-                const email = row.cells[1].textContent.toLowerCase();
-                const role = row.cells[2].textContent;
-                const service = row.cells[3].textContent;
-                const roleId = row.querySelector('.edit-user').getAttribute('data-role');
-                const serviceId = row.querySelector('.edit-user').getAttribute('data-service');
-                
-                const matchSearch = !searchValue || name.includes(searchValue) || email.includes(searchValue);
-                const matchRole = !roleValue || roleId === roleValue;
-                const matchService = !serviceValue || serviceId === serviceValue;
-                
-                if (matchSearch && matchRole && matchService) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+            // Gestion des options de couleur
+            const colorOptions = document.querySelectorAll('.color-option');
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    colorOptions.forEach(o => o.classList.remove('active'));
+                    this.classList.add('active');
+                    document.documentElement.style.setProperty('--primary', this.style.backgroundColor);
+                });
             });
-        }
-        
-        // Recherche de services
-        document.getElementById('searchService').addEventListener('keyup', function() {
-            const searchValue = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#servicesTable tbody tr');
             
-            rows.forEach(row => {
-                const name = row.cells[0].textContent.toLowerCase();
-                const description = row.cells[1].textContent.toLowerCase();
+            // Gestion des options de disposition
+            const layoutOptions = document.querySelectorAll('.layout-option');
+            layoutOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    layoutOptions.forEach(o => o.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Gestion de la taille de la police
+            const fontSizeRange = document.getElementById('fontSizeRange');
+            fontSizeRange.addEventListener('input', function() {
+                document.documentElement.style.fontSize = this.value + '%';
+            });
+            
+            // Gestion de la force du mot de passe
+            const passwordInput = document.getElementById('newPassword');
+            const progressBar = document.querySelector('.password-strength .progress-bar');
+            const strengthText = document.getElementById('passwordStrength');
+            
+            passwordInput.addEventListener('input', function() {
+                const strength = calculatePasswordStrength(this.value);
                 
-                if (name.includes(searchValue) || description.includes(searchValue)) {
-                    row.style.display = '';
+                if (strength < 25) {
+                    progressBar.className = 'progress-bar bg-danger';
+                    progressBar.style.width = '25%';
+                    strengthText.textContent = 'Très faible';
+                } else if (strength < 50) {
+                    progressBar.className = 'progress-bar bg-warning';
+                    progressBar.style.width = '50%';
+                    strengthText.textContent = 'Faible';
+                } else if (strength < 75) {
+                    progressBar.className = 'progress-bar bg-info';
+                    progressBar.style.width = '75%';
+                    strengthText.textContent = 'Moyen';
                 } else {
-                    row.style.display = 'none';
+                    progressBar.className = 'progress-bar bg-success';
+                    progressBar.style.width = '100%';
+                    strengthText.textContent = 'Fort';
                 }
             });
-        });
-        
-        // Gestion des options de maintenance
-        document.getElementById('maintenanceMode').addEventListener('change', function() {
-            const maintenanceOptions = document.getElementById('maintenanceOptions');
-            if (this.checked) {
-                maintenanceOptions.style.display = 'block';
-            } else {
-                maintenanceOptions.style.display = 'none';
+            
+            function calculatePasswordStrength(password) {
+                let strength = 0;
+                
+                // Longueur
+                if (password.length >= 8) strength += 25;
+                
+                // Majuscule
+                if (/[A-Z]/.test(password)) strength += 25;
+                
+                // Chiffre
+                if (/[0-9]/.test(password)) strength += 25;
+                
+                // Caractère spécial
+                if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+                
+                return strength;
             }
+            
+            // Animation d'entrée
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                if (content.classList.contains('active')) {
+                    setTimeout(() => {
+                        content.classList.add('show');
+                    }, 100);
+                }
+            });
         });
-        
-        // Formulaire paramètres système
-        document.getElementById('systemSettingsForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            // Simulation d'enregistrement
-            alert('Paramètres système enregistrés avec succès.');
-        });
-    });
-</script>
+    </script>
 @endsection

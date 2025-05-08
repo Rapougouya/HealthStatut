@@ -60,7 +60,7 @@
 
             {{-- Paramètres - Accessible à tous --}}
             <li class="{{ Route::is('parametres.*') ? 'active' : '' }}">
-                <a href="{{ route('parametres.index') }}"><i class="fas fa-cog"></i> <span>Paramètres</span></a>
+                <a href="{{ route('admin.parametres') }}"><i class="fas fa-cog"></i> <span>Paramètres</span></a>
             </li>
         </ul>
     </div>

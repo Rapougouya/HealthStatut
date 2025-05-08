@@ -52,23 +52,35 @@ Route::middleware(['auth'])->group(function () {
     // 📌 Accès à tous les utilisateurs connectés
     Route::resource('patients', PatientController::class);
     Route::get('patients/{patient}/notes', [PatientController::class, 'notes'])->name('patients.notes');
+    
+    // Route pour les paramètres déplacée ici pour la protéger
+   
+    // Routes pour les paramètres personnels (accessible à tous les utilisateurs authentifiés)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');
+    // Ajout de la route manquante pour la mise à jour du profil
+    Route::put('/profile/update', [ParametreController::class, 'updateProfile'])->name('profile.update');
 
-
+});
     // 🔒 Routes réservées à l’ADMIN
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Route pour les paramètres déplacée ici pour la protéger
-    Route::get('/parametres', [ParametreController::class, 'index'])->name('parametres.index');
+    // Route d'administration principale
+    Route::get('/admin/parametres', [ParametreController::class, 'adminIndex'])->name('admin.parametres');
     
-    Route::resource('utilisateurs', UserController::class)->except(['show']);
-    Route::resource('services', ServiceController::class)->except(['show']);
-
+    // Gestion des utilisateurs
+    Route::get('/admin/utilisateurs', [ParametreController::class, 'adminUsers'])->name('utilisateurs.index');
     Route::post('/utilisateurs', [ParametreController::class, 'storeUser'])->name('utilisateurs.store');
     Route::put('/utilisateurs/{user}', [ParametreController::class, 'updateUser'])->name('utilisateurs.update');
     Route::post('/utilisateurs/{user}/toggle-status', [ParametreController::class, 'toggleUserStatus'])->name('utilisateurs.toggle-status');
     Route::post('/utilisateurs/{user}/reset-password', [ParametreController::class, 'resetUserPassword'])->name('utilisateurs.reset-password');
 
+    // Gestion des services
     Route::post('/services', [ParametreController::class, 'storeService'])->name('services.store');
     Route::put('/services/{service}', [ParametreController::class, 'updateService'])->name('services.update');
+    
+    // Les ressources qui ne sont plus nécessaires car remplacées par les routes ci-dessus
+    // Route::resource('utilisateurs', UserController::class)->except(['show']);
+    // Route::resource('services', ServiceController::class)->except(['show']);
 });
 
     // 🔒 Routes accessibles à ADMIN et MÉDECIN
