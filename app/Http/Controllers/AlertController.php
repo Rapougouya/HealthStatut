@@ -89,7 +89,9 @@ class AlertController extends Controller
      */
     public function create()
     {
-        $patients = User::where('role', 'patient')->get();
+        $patients = User::whereHas('role', function ($query) {
+            $query->where('nom', 'patient');
+        })->get();
         return view('alertes.create', compact('patients'));
     }
 
@@ -141,7 +143,9 @@ class AlertController extends Controller
     public function edit(string $id)
     {
         $alert = Alerte::findOrFail($id);
-        $patients = User::where('role', 'patient')->get();
+        $patients = User::whereHas('role', function ($query) {
+            $query->where('nom', 'patient');
+        })->get();
         
         return view('alertes.edit', compact('alert', 'patients'));
     }
@@ -195,18 +199,26 @@ class AlertController extends Controller
     * Get and save alert settings.
     */
     public function settings()
-{
-    $settings = Alerte::where('user_id', Auth::id())->first();
-    
-    // Crée un enregistrement vide si aucun n'existe
-    if (!$settings) {
-        $settings = new Alerte();
-        $settings->user_id = Auth::id();
-        $settings->save();
+    {
+        $user = Auth::user();
+        $settings = Alerte::where('user_id', $user->id)->first();
+
+        if (!$settings) {
+            // Vérifie si l'utilisateur est un patient
+            if ($user->role && $user->role->nom === 'patient') {
+                $settings = new Alerte();
+                $settings->user_id = $user->id;
+                $settings->patient_id = $user->id; // ou selon la bonne logique
+                $settings->save();
+            } else {
+                // L'utilisateur n'est pas un patient, donc pas d'alerte à créer
+                return redirect()->back()->with('error', 'Seuls les patients peuvent avoir des alertes.');
+            }
+        }
+
+        return view('alertes.settings', compact('settings'));
     }
-    
-    return view('alertes.settings', compact('settings'));
-}
+
 
 private function getDefaultSettings()
 {

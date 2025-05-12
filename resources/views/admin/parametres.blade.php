@@ -3,32 +3,33 @@
 @section('title', 'Paramètres')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/admin-modern.css') }}">
-    <style>
-        .param-header {
-            background: linear-gradient(135deg, var(--secondary), var(--info));
-            color: white;
-            padding: 2rem;
-            border-radius: var(--radius);
-            margin-bottom: 2rem;
-        }
-        
-        .param-card {
-            transition: all 0.3s ease;
-            height: 100%;
-        }
-        
-        .param-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .param-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-    </style>
+<link rel="stylesheet" href="{{ asset('css/admin-modern.css') }}">
+<style>
+    .param-header {
+        background: linear-gradient(135deg, var(--secondary), var(--info));
+        color: white;
+        padding: 2rem;
+        border-radius: var(--radius);
+        margin-bottom: 2rem;
+    }
+    .param-card {
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    .param-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    .param-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--primary);
+    }
+    /* Animation pour les onglets */
+    .tab-pane.fade:not(.show) {
+        display: none;
+    }
+</style>
 @endsection
 
 @section('content')
@@ -41,33 +42,36 @@
             </div>
         </div>
     </div>
-    
+
     <div class="admin-panel">
-        <ul class="nav nav-tabs" id="paramTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab">
+        <!-- Navigation par onglets -->
+        <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
                     <i class="ri-user-line"></i> Profil
-                </a>
+                </button>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" id="appearance-tab" data-toggle="tab" href="#appearance" role="tab">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab" aria-controls="appearance" aria-selected="false">
                     <i class="ri-palette-line"></i> Apparence
-                </a>
+                </button>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" id="notif-tab" data-toggle="tab" href="#notifications" role="tab">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab" aria-controls="notifications" aria-selected="false">
                     <i class="ri-notification-line"></i> Notifications
-                </a>
+                </button>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" id="security-tab" data-toggle="tab" href="#security" role="tab">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
                     <i class="ri-shield-check-line"></i> Sécurité
-                </a>
+                </button>
             </li>
         </ul>
-        
-        <div class="tab-content fade-transition" id="paramTabContent">
-            <div class="tab-content active" id="profile">
+
+        <!-- Contenu des onglets -->
+        <div class="tab-content" id="settingsTabContent">
+            <!-- Onglet Profil -->
+            <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                 <div class="card admin-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="ri-user-settings-line"></i> Informations personnelles</h3>
@@ -145,7 +149,8 @@
                 </div>
             </div>
             
-            <div class="tab-content" id="appearance">
+            <!-- Onglet Apparence -->
+            <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
                 <div class="card admin-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="ri-palette-line"></i> Personnalisation de l'interface</h3>
@@ -239,7 +244,8 @@
                 </div>
             </div>
             
-            <div class="tab-content" id="notifications">
+            <!-- Onglet Notifications -->
+            <div class="tab-pane fade" id="notifications" role="tabpanel" aria-labelledby="notifications-tab">
                 <div class="card admin-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="ri-notification-line"></i> Préférences de notification</h3>
@@ -326,7 +332,8 @@
                 </div>
             </div>
             
-            <div class="tab-content" id="security">
+            <!-- Onglet Sécurité -->
+            <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
                 <div class="card admin-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="ri-shield-check-line"></i> Sécurité du compte</h3>
@@ -361,7 +368,7 @@
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span>Statut 2FA:</span>
-                                <span class="badge badge-danger">Désactivé</span>
+                                <span class="badge bg-danger">Désactivé</span>
                             </div>
                             <p class="text-muted">L'authentification à deux facteurs ajoute une couche de sécurité supplémentaire à votre compte en demandant un code temporaire en plus de votre mot de passe.</p>
                             <button type="button" class="btn btn-outline-primary">Activer l'authentification à deux facteurs</button>
@@ -390,7 +397,7 @@
                                         </td>
                                         <td>Paris, France</td>
                                         <td>Actuellement</td>
-                                        <td><span class="badge badge-success">Session courante</span></td>
+                                        <td><span class="badge bg-success">Session courante</span></td>
                                     </tr>
                                     <tr>
                                         <td>
@@ -415,96 +422,67 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/admin-modern.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Gestion du changement de thème
-            const themeRadios = document.querySelectorAll('input[name="theme"]');
-            themeRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    document.documentElement.setAttribute('data-theme', this.value);
-                });
-            });
-            
-            // Gestion des options de couleur
-            const colorOptions = document.querySelectorAll('.color-option');
-            colorOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    colorOptions.forEach(o => o.classList.remove('active'));
-                    this.classList.add('active');
-                    document.documentElement.style.setProperty('--primary', this.style.backgroundColor);
-                });
-            });
-            
-            // Gestion des options de disposition
-            const layoutOptions = document.querySelectorAll('.layout-option');
-            layoutOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    layoutOptions.forEach(o => o.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-            
-            // Gestion de la taille de la police
-            const fontSizeRange = document.getElementById('fontSizeRange');
-            fontSizeRange.addEventListener('input', function() {
-                document.documentElement.style.fontSize = this.value + '%';
-            });
-            
-            // Gestion de la force du mot de passe
-            const passwordInput = document.getElementById('newPassword');
+<!-- jQuery first, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialisation des onglets Bootstrap
+    var tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabEls.forEach(function(tabEl) {
+        tabEl.addEventListener('click', function (event) {
+            event.preventDefault();
+            var tab = new bootstrap.Tab(this);
+            tab.show();
+        });
+    });
+
+    // Gestion de la force du mot de passe
+    const passwordInput = document.getElementById('newPassword');
+    if(passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const strength = calculatePasswordStrength(this.value);
             const progressBar = document.querySelector('.password-strength .progress-bar');
             const strengthText = document.getElementById('passwordStrength');
             
-            passwordInput.addEventListener('input', function() {
-                const strength = calculatePasswordStrength(this.value);
-                
-                if (strength < 25) {
-                    progressBar.className = 'progress-bar bg-danger';
-                    progressBar.style.width = '25%';
-                    strengthText.textContent = 'Très faible';
-                } else if (strength < 50) {
-                    progressBar.className = 'progress-bar bg-warning';
-                    progressBar.style.width = '50%';
-                    strengthText.textContent = 'Faible';
-                } else if (strength < 75) {
-                    progressBar.className = 'progress-bar bg-info';
-                    progressBar.style.width = '75%';
-                    strengthText.textContent = 'Moyen';
-                } else {
-                    progressBar.className = 'progress-bar bg-success';
-                    progressBar.style.width = '100%';
-                    strengthText.textContent = 'Fort';
-                }
-            });
-            
-            function calculatePasswordStrength(password) {
-                let strength = 0;
-                
-                // Longueur
-                if (password.length >= 8) strength += 25;
-                
-                // Majuscule
-                if (/[A-Z]/.test(password)) strength += 25;
-                
-                // Chiffre
-                if (/[0-9]/.test(password)) strength += 25;
-                
-                // Caractère spécial
-                if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-                
-                return strength;
+            if (strength < 25) {
+                progressBar.className = 'progress-bar bg-danger';
+                progressBar.style.width = '25%';
+                strengthText.textContent = 'Très faible';
+            } else if (strength < 50) {
+                progressBar.className = 'progress-bar bg-warning';
+                progressBar.style.width = '50%';
+                strengthText.textContent = 'Faible';
+            } else if (strength < 75) {
+                progressBar.className = 'progress-bar bg-info';
+                progressBar.style.width = '75%';
+                strengthText.textContent = 'Moyen';
+            } else {
+                progressBar.className = 'progress-bar bg-success';
+                progressBar.style.width = '100%';
+                strengthText.textContent = 'Fort';
             }
-            
-            // Animation d'entrée
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => {
-                if (content.classList.contains('active')) {
-                    setTimeout(() => {
-                        content.classList.add('show');
-                    }, 100);
-                }
-            });
         });
-    </script>
+    }
+
+    function calculatePasswordStrength(password) {
+        let strength = 0;
+        
+        // Longueur
+        if (password.length >= 8) strength += 25;
+        
+        // Majuscule
+        if (/[A-Z]/.test(password)) strength += 25;
+        
+        // Chiffre
+        if (/[0-9]/.test(password)) strength += 25;
+        
+        // Caractère spécial
+        if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+        
+        return strength;
+    }
+});
+</script>
 @endsection

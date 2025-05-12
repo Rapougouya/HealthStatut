@@ -125,7 +125,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/sensors/{sensor}/history', [CapteurController::class, 'history'])->name('sensors.history');
         Route::post('/sensors/{sensor}/reset', [CapteurController::class, 'reset'])->name('sensors.reset');
         Route::post('/sensors/{sensor}/unassign', [CapteurController::class, 'unassign'])->name('sensors.unassign');
-Route::post('/sensors/{sensor}/assign', [CapteurController::class, 'assign'])->name('sensors.assign');
+        Route::post('/sensors/{sensor}/assign', [CapteurController::class, 'assign'])->name('sensors.assign');
+
+        // Nouvelle route pour la configuration WiFi des capteurs
+        Route::get('/sensors/wifi/config', [CapteurController::class, 'wifiConfig'])->name('sensors.wifi-config');
+        Route::post('/api/sensors/{sensor}/configure', [CapteurController::class, 'apiSaveConfiguration'])->name('api.sensors.configure');
+        Route::get('/api/sensors', [CapteurController::class, 'apiGetSensors'])->name('api.sensors.list');
+
     });
 
     // 🔒 Routes accessibles à ADMIN et MÉDECIN

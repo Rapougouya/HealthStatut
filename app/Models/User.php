@@ -98,8 +98,9 @@ class User extends Authenticatable
      */
     public function isAdmin()
     {
-        return $this->role === 'admin'; // Modifie selon ta logique
+       return $this->role && $this->role->nom === 'admin';
     }
+
 
     /**
      * Get the alert settings for the user.
