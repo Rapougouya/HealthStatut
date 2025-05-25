@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Events\AlertCreated;
 
 class Alerte extends Model
 {
@@ -28,6 +29,13 @@ class Alerte extends Model
         'confirmee_a' => 'datetime',
     ];
 
+    /**
+     * The event map for the model.
+     */
+    protected $dispatchesEvents = [
+        'created' => AlertCreated::class,
+    ];
+    
     // Relations
     public function patient()
     {

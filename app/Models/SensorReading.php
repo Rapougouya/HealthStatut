@@ -4,45 +4,47 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Jobs\ProcessSensorDataJob;
 
 class SensorReading extends Model
 {
     use HasFactory;
 
-    /**
-     * Les attributs qui sont assignables en masse.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'capteur_id',
+        'type',
         'value',
-        'timestamp',
-        'raw_data',
-        'signal_strength',
+        'unit',
         'battery_level',
-        'status_code',
-        'connection_type',   // Type de connexion (WiFi, Bluetooth, etc.)
-        'latency',
+        'signal_strength',
+        'raw_data',
+        'metadata',
+        'is_valid',
+        'error_message',
+        'measured_at'
     ];
 
-    /**
-     * Les attributs à transformer en types natifs.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'value' => 'float',
-        'timestamp' => 'datetime',
         'raw_data' => 'array',
-        'signal_strength' => 'integer',
-        'battery_level' => 'integer',
-        'status_code' => 'integer',
-        'latency' => 'integer',
+        'metadata' => 'array',
+        'is_valid' => 'boolean',
+        'battery_level' => 'decimal:2',
+        'measured_at' => 'datetime'
     ];
 
     /**
-     * Obtenir le capteur associé à cette lecture.
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (SensorReading $reading) {
+            // Traitement asynchrone des données du capteur
+            ProcessSensorDataJob::dispatch($reading);
+        });
+    }
+
+    /**
+     * Get the sensor that owns the reading.
      */
     public function sensor()
     {
@@ -50,48 +52,71 @@ class SensorReading extends Model
     }
 
     /**
-     * Vérifie si la valeur est dans les seuils acceptables.
-     *
-     * @return bool
+     * Scope pour filtrer par type de capteur
      */
-    public function isWithinThresholds()
+    public function scopeOfType($query, $type)
     {
-        $sensor = $this->sensor;
-        
-        if (!$sensor->threshold_low && !$sensor->threshold_high) {
-            return true; // Pas de seuils définis
-        }
-        
-        if ($sensor->threshold_low && $this->value < $sensor->threshold_low) {
-            return false;
-        }
-        
-        if ($sensor->threshold_high && $this->value > $sensor->threshold_high) {
-            return false;
-        }
-        
-        return true;
+        return $query->where('type', $type);
     }
 
     /**
-     * Vérifie si la lecture a une bonne qualité de signal.
-     *
-     * @return bool
+     * Scope pour filtrer les lectures valides
      */
-    public function hasGoodSignal()
+    public function scopeValid($query)
     {
-        // Le signal est considéré bon si supérieur à -70 dBm (échelle typique: -30 à -90)
-        return $this->signal_strength >= -70;
+        return $query->where('is_valid', true);
     }
 
     /**
-     * Vérifie si la connexion est stable.
-     *
-     * @return bool
+     * Scope pour filtrer par période
      */
-    public function hasStableConnection()
+    public function scopeBetweenDates($query, $startDate, $endDate)
     {
-        // On considère que la connexion est stable si la latence est inférieure à 100ms
-        return $this->latency < 100;
+        return $query->whereBetween('measured_at', [$startDate, $endDate]);
+    }
+
+    /**
+     * Obtenir la valeur numérique si possible
+     */
+    public function getNumericValueAttribute()
+    {
+        if (is_numeric($this->value)) {
+            return (float) $this->value;
+        }
+        
+        // Pour la tension artérielle (format "120/80")
+        if ($this->type === 'blood_pressure' && strpos($this->value, '/') !== false) {
+            $parts = explode('/', $this->value);
+            return [
+                'systolic' => (int) $parts[0],
+                'diastolic' => (int) $parts[1]
+            ];
+        }
+        
+        return null;
+    }
+
+    /**
+     * Vérifier si la lecture est dans les limites normales
+     */
+    public function isWithinNormalRange(): bool
+    {
+        $normalRanges = [
+            'heart_rate' => ['min' => 60, 'max' => 100],
+            'spo2' => ['min' => 95, 'max' => 100],
+            'temperature' => ['min' => 36.0, 'max' => 37.5],
+        ];
+
+        if (!isset($normalRanges[$this->type])) {
+            return true; // Pas de plage définie
+        }
+
+        $numericValue = $this->numeric_value;
+        if ($numericValue === null) {
+            return true;
+        }
+
+        $range = $normalRanges[$this->type];
+        return $numericValue >= $range['min'] && $numericValue <= $range['max'];
     }
 }

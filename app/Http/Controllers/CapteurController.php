@@ -40,12 +40,12 @@ class CapteurController extends Controller
             });
         }
         
-        $sensors = $query->latest()->paginate(10);
+        $capteurs = $query->latest()->paginate(10);
         
         // Calcul du nombre de capteurs avec batterie faible (simulation)
         $lowBatteryCount = rand(0, 5);  // À remplacer par une vraie logique
         
-        return view('capteurs.index', compact('sensors', 'lowBatteryCount'));
+        return view('capteurs.index', compact('capteurs', 'lowBatteryCount'));
     }
 
     /**

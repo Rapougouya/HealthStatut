@@ -2,28 +2,37 @@
 
 @section('title', 'HealthStatut - Inscription')
 
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/register.css') }}">
+@endsection
+
 @section('content')
-<div class="login-container">
-  <div class="login-left">
-    <div class="login-logo">
-      <h1>Health<span>Statut</span></h1>
+<div class="register-container">
+  <div class="register-left">
+    <div class="register-logo">
+      <img src="{{ asset('images/logo_ministere_sante.png') }}" alt="HealthStatut Logo" class="fade-in">
+      <h1>Health<span>STATUT</span></h1>
     </div>
-    <div class="illustration">
-      <img src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png" 
-           alt="Healthcare Illustration" 
-           class="fade-in"
-           style="width: 250px; height: auto;">
-    </div>
-    <div class="login-info">
+    
+    <div class="bg-pattern"></div>
+    
+    <div class="register-info">
       <h2 class="slide-in">Plateforme de surveillance médicale</h2>
-      <p class="slide-in delay-200">Rejoignez notre plateforme pour surveiller les données vitales de vos patients en temps réel</p>
+      <p class="slide-in delay-200">Rejoignez notre plateforme innovante pour la surveillance des données vitales en temps réel.</p>
+      
+      <ul class="benefits-list">
+        <li>Surveillance des patients en temps réel</li>
+        <li>Analyse des données vitales</li>
+        <li>Alertes et notifications instantanées</li>
+        <li>Collaboration entre professionnels de santé</li>
+      </ul>
     </div>
   </div>
 
-  <div class="login-right">
-    <div class="login-form-container">
+  <div class="register-right">
+    <div class="register-form-container">
       <h2 class="welcome-text">Inscription</h2>
-      <p class="login-subtitle">Créez votre compte sur HealthStatut</p>
+      <p class="register-subtitle">Créez votre compte professionnel sur HealthStatut</p>
       
       @if(session('error'))
         <div class="alert alert-danger">
@@ -31,7 +40,7 @@
         </div>
       @endif
       
-      <form id="registerForm" class="login-form" method="POST" action="{{ route('register') }}">
+      <form id="registerForm" class="register-form" method="POST" action="{{ route('register') }}">
         @csrf
         
         <div class="form-row">
@@ -52,7 +61,7 @@
               <label for="email">Email</label>
               <div class="input-with-icon">
                 <span class="input-icon email-icon"></span>
-                <input type="email" id="email" name="email" placeholder="Entrez votre email" required
+                <input type="email" id="email" name="email" placeholder="Entrez votre email professionnel" required
                       value="{{ old('email') }}" class="@error('email') is-invalid @enderror">
               </div>
               @error('email')
@@ -64,7 +73,7 @@
               <label for="password">Mot de passe</label>
               <div class="input-with-icon password-input">
                 <span class="input-icon lock-icon"></span>
-                <input type="password" id="password" name="password" placeholder="Créez un mot de passe" required
+                <input type="password" id="password" name="password" placeholder="Créez un mot de passe sécurisé" required
                       class="@error('password') is-invalid @enderror">
                 <button type="button" id="togglePassword" class="toggle-password">
                   <span class="eye-icon"></span>
@@ -93,16 +102,34 @@
               <label for="service_id">Service</label>
               <div class="input-with-icon">
                 <span class="input-icon service-icon"></span>
-                <select id="service_id" name="service_id" class="@error('service_id') is-invalid @enderror">
+                <select id="service_id" name="service_id" class="@error('service_id') is-invalid @enderror" required>
                   <option value="">Sélectionnez votre service</option>
-                  @foreach(\App\Models\Service::all() as $service)
+                  @foreach(App\Models\Service::all() as $service)
                     <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>
-                      {{ $service->nom }}
+                      {{ $service->name }}
                     </option>
                   @endforeach
                 </select>
               </div>
               @error('service_id')
+                <span class="error-message">{{ $message }}</span>
+              @enderror
+            </div>
+            
+            <div class="form-group">
+              <label for="role_id">Type de compte</label>
+              <div class="input-with-icon">
+                <span class="input-icon user-icon"></span>
+                <select id="role_id" name="role_id" class="@error('role_id') is-invalid @enderror" required>
+                  <option value="">Sélectionnez votre rôle</option>
+                  @foreach(App\Models\Role::where('nom', '!=', 'admin')->get() as $role)
+                    <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                      {{ ucfirst($role->nom) }}
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+              @error('role_id')
                 <span class="error-message">{{ $message }}</span>
               @enderror
             </div>
@@ -129,18 +156,18 @@
           </label>
         </div>
         
-        <button type="submit" class="login-button pulse">
-          S'inscrire
+        <button type="submit" class="register-button pulse">
+          Créer mon compte
           <span class="btn-arrow"></span>
         </button>
       </form>
       
-      <div class="register-link">
+      <div class="login-link">
         Vous avez déjà un compte? <a href="{{ route('login') }}">Connectez-vous</a>
       </div>
       
       <div class="login-footer">
-        <p>©{{ date('Y') }} HealthStatut pour plus d'informations.<br>Contactez-nous à <a href="mailto:care@healthmobis.com">care@healthmobis.com</a></p>
+        <p>©{{ date('Y') }} HealthStatut - Ministère de la Santé<br>Pour plus d'informations, contactez-nous à <a href="mailto:support@healthstatut.ma">support@healthstatut.ma</a></p>
       </div>
     </div>
   </div>
@@ -148,85 +175,5 @@
 @endsection
 
 @section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Animation d'entrée des éléments
-  const animateElements = document.querySelectorAll('.fade-in, .slide-in');
-  animateElements.forEach(element => {
-    element.classList.add('visible');
-  });
-  
-  // Toggle password visibility pour le mot de passe
-  const togglePassword = document.getElementById('togglePassword');
-  const passwordInput = document.getElementById('password');
-  
-  if (togglePassword && passwordInput) {
-    togglePassword.addEventListener('click', function() {
-      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-      passwordInput.setAttribute('type', type);
-      
-      // Change icon based on password visibility
-      if (type === 'text') {
-        togglePassword.querySelector('.eye-icon').classList.add('eye-off');
-      } else {
-        togglePassword.querySelector('.eye-icon').classList.remove('eye-off');
-      }
-    });
-  }
-
-  // Toggle password visibility pour la confirmation du mot de passe
-  const togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
-  const passwordConfirmInput = document.getElementById('password_confirmation');
-  
-  if (togglePasswordConfirm && passwordConfirmInput) {
-    togglePasswordConfirm.addEventListener('click', function() {
-      const type = passwordConfirmInput.getAttribute('type') === 'password' ? 'text' : 'password';
-      passwordConfirmInput.setAttribute('type', type);
-      
-      // Change icon based on password visibility
-      if (type === 'text') {
-        togglePasswordConfirm.querySelector('.eye-icon').classList.add('eye-off');
-      } else {
-        togglePasswordConfirm.querySelector('.eye-icon').classList.remove('eye-off');
-      }
-    });
-  }
-  
-  // Form validation feedback
-  const registerForm = document.getElementById('registerForm');
-  const inputs = registerForm.querySelectorAll('input[required]');
-  
-  inputs.forEach(input => {
-    input.addEventListener('blur', function() {
-      if (this.value.trim() === '') {
-        this.classList.add('is-invalid');
-        this.classList.remove('is-valid');
-      } else {
-        this.classList.remove('is-invalid');
-        this.classList.add('is-valid');
-      }
-    });
-    
-    input.addEventListener('input', function() {
-      if (this.value.trim() !== '') {
-        this.classList.remove('is-invalid');
-      }
-    });
-  });
-
-  // Vérification de la concordance des mots de passe
-  const password = document.getElementById('password');
-  const passwordConfirm = document.getElementById('password_confirmation');
-  
-  passwordConfirm.addEventListener('input', function() {
-    if (password.value !== this.value) {
-      this.classList.add('is-invalid');
-      this.classList.remove('is-valid');
-    } else {
-      this.classList.remove('is-invalid');
-      this.classList.add('is-valid');
-    }
-  });
-});
-</script>
+<script src="{{ asset('js/register.js') }}"></script>
 @endsection
