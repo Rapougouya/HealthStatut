@@ -35,8 +35,10 @@
   /* Sidebar Styles */
   .sidebar {
     width: var(--sidebar-width);
-    background-color: var(--primary-color);
+    background-color: #053bdd;;
     color: white;
+    font-size: 15px;
+    font-weight: bold;
     display: flex;
     flex-direction: column;
     position: fixed;

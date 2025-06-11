@@ -33,7 +33,7 @@
             {{-- Rapports - Accessible aux admins et médecins --}}
             @if(auth()->user()->role->nom === 'admin' || auth()->user()->role->nom === 'medecin')
             <li class="{{ Route::is('rapports.*') || Route::is('reports.*') ? 'active' : '' }}">
-                <a href="{{ route('reports.generate') }}"><i class="fas fa-file-alt"></i> <span>Rapports</span></a>
+                <a href="{{ route('rapports.index') }}"><i class="fas fa-file-alt"></i> <span>Rapports</span></a>
             </li>
             @endif
 
@@ -61,7 +61,7 @@
             {{-- Paramètres - Accessible à tous sauf patients --}}
             @if(auth()->user()->role->nom !== 'patient')
             <li class="{{ Route::is('admin.*') || Route::is('utilisateurs.*') || Route::is('services.*') ? 'active' : '' }}">
-                <a href="{{ route('utilisateurs.index') }}"><i class="fas fa-cog"></i> <span>Paramètres</span></a>
+                <a href="{{ route('utilisateurs.index') }}"><i class="fas fa-cog"></i> <span>Utilisateurs</span></a>
             </li>
             @endif
         </ul>

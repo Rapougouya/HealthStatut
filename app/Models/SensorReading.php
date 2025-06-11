@@ -48,7 +48,7 @@ class SensorReading extends Model
      */
     public function sensor()
     {
-        return $this->belongsTo(Sensor::class);
+        return $this->belongsTo(Capteur::class, 'capteur_id');
     }
 
     /**

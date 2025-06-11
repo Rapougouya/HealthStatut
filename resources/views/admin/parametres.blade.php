@@ -1,488 +1,1132 @@
 @extends('layouts.app')
 
-@section('title', 'Paramètres')
+@section('title', 'Administration - Système de Monitoring Médical')
 
 @section('styles')
-<link rel="stylesheet" href="{{ asset('css/admin-modern.css') }}">
-<style>
-    .param-header {
-        background: linear-gradient(135deg, var(--secondary), var(--info));
-        color: white;
-        padding: 2rem;
-        border-radius: var(--radius);
-        margin-bottom: 2rem;
-    }
-    .param-card {
-        transition: all 0.3s ease;
-        height: 100%;
-    }
-    .param-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-md);
-    }
-    .param-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        color: var(--primary);
-    }
-    /* Animation pour les onglets */
-    .tab-pane.fade:not(.show) {
-        display: none;
-    }
-</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --border-color: rgba(255, 255, 255, 0.2);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+
+        .admin-container {
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .admin-header {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .admin-title {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .title-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .admin-title h1 {
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .stat-card.users { border-left-color: var(--info-color); }
+        .stat-card.patients { border-left-color: var(--success-color); }
+        .stat-card.sensors { border-left-color: var(--warning-color); }
+        .stat-card.alerts { border-left-color: var(--danger-color); }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            margin-right: 15px;
+        }
+
+        .stat-icon.users { background: var(--info-color); }
+        .stat-icon.patients { background: var(--success-color); }
+        .stat-icon.sensors { background: var(--warning-color); }
+        .stat-icon.alerts { background: var(--danger-color); }
+
+        .stat-content h3 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 5px 0;
+        }
+
+        .stat-content p {
+            color: var(--text-secondary);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        .admin-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .section-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            text-decoration: none;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-primary);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+        }
+
+        .sensor-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .sensor-item {
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .sensor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .sensor-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sensor-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sensor-status.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .sensor-status.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-card {
+            background: rgba(248, 250, 252, 0.5);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.5rem;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        @media (max-width: 768px) {
+            .admin-container { padding: 15px; }
+            .admin-header { padding: 20px; }
+            .admin-title h1 { font-size: 2rem; }
+            .admin-sections { grid-template-columns: 1fr; }
+            .stats-overview { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+    </style>
 @endsection
 
 @section('content')
 <div class="admin-container">
-    <div class="param-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="page-title"><i class="ri-settings-4-line"></i> Paramètres</h1>
-                <p class="text-white-50">Configurez vos préférences et personnalisez l'application</p>
+    <!-- En-tête de l'administration -->
+    <div class="admin-header">
+        <div class="admin-title">
+            <div class="title-icon">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <h1>Administration Système</h1>
+        </div>
+        
+        <!-- Statistiques générales -->
+        <div class="stats-overview">
+            <div class="stat-card users">
+                <div class="stat-header">
+                    <div class="stat-icon users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ $stats['users'] ?? '45' }}</h3>
+                        <p>Utilisateurs Actifs</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card patients">
+                <div class="stat-header">
+                    <div class="stat-icon patients">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ $stats['patients'] ?? '128' }}</h3>
+                        <p>Patients Enregistrés</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card sensors">
+                <div class="stat-header">
+                    <div class="stat-icon sensors">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ $stats['sensors'] ?? '24' }}</h3>
+                        <p>Capteurs Connectés</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card alerts">
+                <div class="stat-header">
+                    <div class="stat-icon alerts">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ $stats['alerts'] ?? '7' }}</h3>
+                        <p>Alertes Actives</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="admin-panel">
-        <!-- Navigation par onglets -->
-        <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">
-                    <i class="ri-user-line"></i> Profil
+    <!-- Sections d'administration -->
+    <div class="admin-sections">
+        <!-- Gestion des Utilisateurs -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="section-title">Gestion des Utilisateurs</h3>
+            </div>
+            
+            <div class="btn-grid">
+                <button class="btn btn-primary" onclick="openAddUserModal()">
+                    <i class="fas fa-user-plus"></i>
+                    Ajouter Utilisateur
                 </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="appearance-tab" data-bs-toggle="tab" data-bs-target="#appearance" type="button" role="tab" aria-controls="appearance" aria-selected="false">
-                    <i class="ri-palette-line"></i> Apparence
+                <button class="btn btn-secondary" onclick="window.location.href='/admin/utilisateurs'">
+                    <i class="fas fa-list"></i>
+                    Liste Utilisateurs
                 </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab" aria-controls="notifications" aria-selected="false">
-                    <i class="ri-notification-line"></i> Notifications
+                <button class="btn btn-warning" onclick="manageRoles()">
+                    <i class="fas fa-user-tag"></i>
+                    Gérer Rôles
                 </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
-                    <i class="ri-shield-check-line"></i> Sécurité
+                <button class="btn btn-danger" onclick="viewInactiveUsers()">
+                    <i class="fas fa-user-slash"></i>
+                    Comptes Inactifs
                 </button>
-            </li>
-        </ul>
+            </div>
+        </div>
 
-        <!-- Contenu des onglets -->
-        <div class="tab-content" id="settingsTabContent">
-            <!-- Onglet Profil -->
-            <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                <div class="card admin-card">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="ri-user-settings-line"></i> Informations personnelles</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="profileForm" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
-                            
-                            <div class="d-flex mb-4 align-items-center">
-                                <div class="me-4">
-                                    <div class="avatar" style="width: 100px; height: 100px; font-size: 2rem;">
-                                        @if(auth()->user()->avatar)
-                                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->nom }}">
-                                        @else
-                                            {{ strtoupper(substr(auth()->user()->prenom, 0, 1) . substr(auth()->user()->nom, 0, 1)) }}
-                                        @endif
-                                    </div>
-                                </div>
+        <!-- Gestion des Capteurs -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <h3 class="section-title">Gestion des Capteurs</h3>
+            </div>
+            
+            <div class="sensor-controls">
+                @forelse($sensors ?? [] as $sensor)
+                    <div class="sensor-item">
+                        <div class="sensor-header">
+                            <div class="sensor-info">
+                                <i class="fas fa-heartbeat" style="color: #ef4444;"></i>
                                 <div>
-                                    <h4 class="mb-1">{{ auth()->user()->nom_complet }}</h4>
-                                    <p class="text-muted mb-2">{{ auth()->user()->role->nom }} - {{ auth()->user()->service->name }}</p>
-                                    <div class="d-flex gap-2">
-                                        <label class="btn btn-sm btn-outline-primary">
-                                            <i class="ri-upload-2-line"></i> Changer la photo
-                                            <input type="file" name="avatar" style="display: none">
-                                        </label>
-                                        <button type="button" class="btn btn-sm btn-outline-danger">
-                                            <i class="ri-delete-bin-line"></i> Supprimer
-                                        </button>
-                                    </div>
+                                    <strong>{{ $sensor->sensor_id ?? 'SEN-001' }}</strong>
+                                    <br>
+                                    <small>{{ $sensor->model ?? 'CardioSense Pro' }}</small>
                                 </div>
                             </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="nom" class="form-label">Nom</label>
-                                        <input type="text" id="nom" name="nom" class="form-control" value="{{ auth()->user()->nom }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="prenom" class="form-label">Prénom</label>
-                                        <input type="text" id="prenom" name="prenom" class="form-control" value="{{ auth()->user()->prenom }}">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="email" class="form-label">Email</label>
-                                        <input type="email" id="email" name="email" class="form-control" value="{{ auth()->user()->email }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="telephone" class="form-label">Téléphone</label>
-                                        <input type="tel" id="telephone" name="telephone" class="form-control" value="{{ auth()->user()->telephone ?? '' }}">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group mb-4">
-                                <label for="bio" class="form-label">Bio</label>
-                                <textarea id="bio" name="bio" class="form-control" rows="3">{{ auth()->user()->bio ?? '' }}</textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Onglet Apparence -->
-            <div class="tab-pane fade" id="appearance" role="tabpanel" aria-labelledby="appearance-tab">
-                <div class="card admin-card">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="ri-palette-line"></i> Personnalisation de l'interface</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="appearanceForm">
-                            <div class="mb-4">
-                                <label class="form-label">Thème</label>
-                                <div class="d-flex gap-4 mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="theme" id="themeLight" value="light" checked>
-                                        <label class="form-check-label" for="themeLight">
-                                            Clair
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="theme" id="themeDark" value="dark">
-                                        <label class="form-check-label" for="themeDark">
-                                            Sombre
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="theme" id="themeSystem" value="system">
-                                        <label class="form-check-label" for="themeSystem">
-                                            Système
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label class="form-label">Couleur principale</label>
-                                <div class="d-flex gap-3 mb-3">
-                                    <div class="color-option active" style="background-color: #6366f1;"></div>
-                                    <div class="color-option" style="background-color: #3b82f6;"></div>
-                                    <div class="color-option" style="background-color: #10b981;"></div>
-                                    <div class="color-option" style="background-color: #f59e0b;"></div>
-                                    <div class="color-option" style="background-color: #ef4444;"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label class="form-label">Disposition</label>
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-4">
-                                        <div class="layout-option active p-3 border rounded">
-                                            <div class="layout-preview mb-2" style="height: 100px; background-color: #f1f5f9; position: relative;">
-                                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background-color: #e2e8f0;"></div>
-                                                <div style="position: absolute; right: 0; top: 0; left: 30%; height: 20%; background-color: #cbd5e1;"></div>
-                                            </div>
-                                            <div class="text-center">Standard</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="layout-option p-3 border rounded">
-                                            <div class="layout-preview mb-2" style="height: 100px; background-color: #f1f5f9; position: relative;">
-                                                <div style="position: absolute; left: 0; top: 0; width: 100%; height: 20%; background-color: #cbd5e1;"></div>
-                                                <div style="position: absolute; left: 0; top: 20%; bottom: 0; width: 30%; background-color: #e2e8f0;"></div>
-                                            </div>
-                                            <div class="text-center">Horizontal</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="layout-option p-3 border rounded">
-                                            <div class="layout-preview mb-2" style="height: 100px; background-color: #f1f5f9; position: relative;">
-                                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 20%; background-color: #e2e8f0;"></div>
-                                                <div style="position: absolute; right: 0; top: 0; left: 20%; height: 20%; background-color: #cbd5e1;"></div>
-                                            </div>
-                                            <div class="text-center">Compact</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group mb-3">
-                                <label class="form-label">Taille du texte</label>
-                                <input type="range" class="form-range" min="80" max="120" step="5" value="100" id="fontSizeRange">
-                                <div class="d-flex justify-content-between">
-                                    <span>Petit</span>
-                                    <span>Normal</span>
-                                    <span>Grand</span>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Appliquer</button>
-                                <button type="reset" class="btn btn-secondary">Réinitialiser</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Onglet Notifications -->
-            <div class="tab-pane fade" id="notifications" role="tabpanel" aria-labelledby="notifications-tab">
-                <div class="card admin-card">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="ri-notification-line"></i> Préférences de notification</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="notificationsForm">
-                            <div class="mb-4">
-                                <h5 class="mb-3">Notifications par email</h5>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="emailAlerts" checked>
-                                    <label class="form-check-label" for="emailAlerts">
-                                        Alertes patients
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="emailAppointments" checked>
-                                    <label class="form-check-label" for="emailAppointments">
-                                        Rappels de rendez-vous
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="emailSystem">
-                                    <label class="form-check-label" for="emailSystem">
-                                        Annonces système
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <h5 class="mb-3">Notifications dans l'application</h5>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="appAlerts" checked>
-                                    <label class="form-check-label" for="appAlerts">
-                                        Alertes patients
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="appAppointments" checked>
-                                    <label class="form-check-label" for="appAppointments">
-                                        Rappels de rendez-vous
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="appMessages" checked>
-                                    <label class="form-check-label" for="appMessages">
-                                        Nouveaux messages
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" id="appSystem" checked>
-                                    <label class="form-check-label" for="appSystem">
-                                        Annonces système
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <h5 class="mb-3">Fréquence des notifications</h5>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="notifFrequency" id="freqRealtime" value="realtime" checked>
-                                    <label class="form-check-label" for="freqRealtime">
-                                        Temps réel
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="notifFrequency" id="freqHourly" value="hourly">
-                                    <label class="form-check-label" for="freqHourly">
-                                        Résumé horaire
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="notifFrequency" id="freqDaily" value="daily">
-                                    <label class="form-check-label" for="freqDaily">
-                                        Résumé quotidien
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Enregistrer les préférences</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Onglet Sécurité -->
-            <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
-                <div class="card admin-card">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="ri-shield-check-line"></i> Sécurité du compte</h3>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="mb-4">Changer le mot de passe</h5>
-                        <form id="passwordForm">
-                            <div class="mb-3">
-                                <label for="currentPassword" class="form-label">Mot de passe actuel</label>
-                                <input type="password" class="form-control" id="currentPassword" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="newPassword" class="form-label">Nouveau mot de passe</label>
-                                <input type="password" class="form-control" id="newPassword" required>
-                                <div class="password-strength mt-2">
-                                    <div class="progress" style="height: 5px;">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
-                                    </div>
-                                    <small class="text-muted">Force: <span id="passwordStrength">Faible</span></small>
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <label for="confirmPassword" class="form-label">Confirmer le nouveau mot de passe</label>
-                                <input type="password" class="form-control" id="confirmPassword" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Mettre à jour le mot de passe</button>
-                        </form>
-                        
-                        <hr class="my-4">
-                        
-                        <h5 class="mb-4">Authentification à deux facteurs</h5>
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span>Statut 2FA:</span>
-                                <span class="badge bg-danger">Désactivé</span>
-                            </div>
-                            <p class="text-muted">L'authentification à deux facteurs ajoute une couche de sécurité supplémentaire à votre compte en demandant un code temporaire en plus de votre mot de passe.</p>
-                            <button type="button" class="btn btn-outline-primary">Activer l'authentification à deux facteurs</button>
+                            <span class="sensor-status {{ $sensor->active ?? true ? 'active' : 'inactive' }}">
+                                {{ $sensor->active ?? true ? 'Actif' : 'Inactif' }}
+                            </span>
                         </div>
                         
-                        <hr class="my-4">
-                        
-                        <h5 class="mb-4">Sessions actives</h5>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Appareil</th>
-                                        <th>Localisation</th>
-                                        <th>Dernière activité</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <i class="ri-computer-line me-2 text-primary"></i>
-                                                Windows 10 - Chrome
-                                            </div>
-                                        </td>
-                                        <td>Paris, France</td>
-                                        <td>Actuellement</td>
-                                        <td><span class="badge bg-success">Session courante</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <i class="ri-smartphone-line me-2 text-secondary"></i>
-                                                iPhone - Safari
-                                            </div>
-                                        </td>
-                                        <td>Paris, France</td>
-                                        <td>Il y a 2 jours</td>
-                                        <td><button class="btn btn-sm btn-outline-danger">Déconnecter</button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" {{ $sensor->active ?? true ? 'checked' : '' }} 
+                                       onchange="toggleSensor('{{ $sensor->id ?? 1 }}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                            <button class="btn btn-primary" onclick="configureSensor('{{ $sensor->id ?? 1 }}')">
+                                <i class="fas fa-cog"></i>
+                                Configurer
+                            </button>
                         </div>
                     </div>
+                @empty
+                    <!-- Capteurs par défaut pour démonstration -->
+                    <div class="sensor-item">
+                        <div class="sensor-header">
+                            <div class="sensor-info">
+                                <i class="fas fa-heartbeat" style="color: #ef4444;"></i>
+                                <div>
+                                    <strong>SEN-001</strong>
+                                    <br>
+                                    <small>CardioSense Pro</small>
+                                </div>
+                            </div>
+                            <span class="sensor-status active">Actif</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked onchange="toggleSensor('1', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                            <button class="btn btn-primary" onclick="configureSensor('1')">
+                                <i class="fas fa-cog"></i>
+                                Configurer
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="sensor-item">
+                        <div class="sensor-header">
+                            <div class="sensor-info">
+                                <i class="fas fa-thermometer-half" style="color: #f59e0b;"></i>
+                                <div>
+                                    <strong>SEN-002</strong>
+                                    <br>
+                                    <small>ThermoGuard Plus</small>
+                                </div>
+                            </div>
+                            <span class="sensor-status inactive">Inactif</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="toggleSensor('2', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                            <button class="btn btn-primary" onclick="configureSensor('2')">
+                                <i class="fas fa-cog"></i>
+                                Configurer
+                            </button>
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+
+            <div class="btn-grid" style="margin-top: 20px;">
+                <button class="btn btn-success" onclick="window.location.href='/sensors/create'">
+                    <i class="fas fa-plus"></i>
+                    Ajouter Capteur
+                </button>
+                <button class="btn btn-warning" onclick="viewSensorDiagnostics()">
+                    <i class="fas fa-stethoscope"></i>
+                    Diagnostics
+                </button>
+            </div>
+        </div>
+
+        <!-- Saisie Manuelle de Données -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-keyboard"></i>
+                </div>
+                <h3 class="section-title">Saisie Manuelle de Données</h3>
+            </div>
+            
+            <form id="manualDataForm" onsubmit="submitManualData(event)">
+                <div class="form-group">
+                    <label class="form-label">Patient</label>
+                    <select class="form-select" name="patient_id" required>
+                        <option value="">Sélectionner un patient</option>
+                        <option value="1">Mehdi Rais</option>
+                        <option value="2">Sara Tazi</option>
+                        <option value="3">Karim Alaoui</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Type de Mesure</label>
+                    <select class="form-select" name="measurement_type" required onchange="updateMeasurementFields(this.value)">
+                        <option value="">Sélectionner le type</option>
+                        <option value="heartrate">Rythme Cardiaque (bpm)</option>
+                        <option value="temperature">Température (°C)</option>
+                        <option value="blood_pressure">Pression Artérielle (mmHg)</option>
+                        <option value="oxygen">Saturation O₂ (%)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="valueFields">
+                    <label class="form-label">Valeur</label>
+                    <input type="number" class="form-input" name="value" step="0.1" required>
+                </div>
+
+                <div class="form-group" id="bloodPressureFields" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label class="form-label">Systolique</label>
+                            <input type="number" class="form-input" name="systolic">
+                        </div>
+                        <div>
+                            <label class="form-label">Diastolique</label>
+                            <input type="number" class="form-input" name="diastolic">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Date et Heure</label>
+                    <input type="datetime-local" class="form-input" name="timestamp" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notes (optionnel)</label>
+                    <input type="text" class="form-input" name="notes" placeholder="Commentaires sur la mesure">
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    <i class="fas fa-save"></i>
+                    Enregistrer la Mesure
+                </button>
+            </form>
+        </div>
+
+        <!-- Paramètres Système -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h3 class="section-title">Paramètres Système</h3>
+            </div>
+            
+            <div class="btn-grid">
+                <button class="btn btn-primary" onclick="openSystemSettings()">
+                    <i class="fas fa-server"></i>
+                    Configuration Serveur
+                </button>
+                <button class="btn btn-warning" onclick="viewSystemLogs()">
+                    <i class="fas fa-file-alt"></i>
+                    Logs Système
+                </button>
+                <button class="btn btn-danger" onclick="systemMaintenance()">
+                    <i class="fas fa-tools"></i>
+                    Maintenance
+                </button>
+                <button class="btn btn-secondary" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    Exporter Données
+                </button>
+            </div>
+        </div>
+
+        <!-- Actions Rapides -->
+        <div class="section-card">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="section-title">Actions Rapides</h3>
+            </div>
+            
+            <div class="quick-actions">
+                <div class="action-card" onclick="viewRecentAlerts()">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h4>Alertes Récentes</h4>
+                    <p>Consulter les dernières alertes</p>
+                </div>
+
+                <div class="action-card" onclick="generateReport()">
+                    <div class="action-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h4>Rapport Global</h4>
+                    <p>Générer un rapport système</p>
+                </div>
+
+                <div class="action-card" onclick="systemBackup()">
+                    <div class="action-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h4>Sauvegarde</h4>
+                    <p>Créer une sauvegarde</p>
+                </div>
+
+                <div class="action-card" onclick="viewStatistics()">
+                    <div class="action-icon">
+                        <i class="fas fa-analytics"></i>
+                    </div>
+                    <h4>Statistiques</h4>
+                    <p>Analyser les performances</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal pour ajouter un utilisateur -->
+<div id="addUserModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('addUserModal')">&times;</span>
+        <h2><i class="fas fa-user-plus"></i> Ajouter un Nouvel Utilisateur</h2>
+        
+        <form id="addUserForm" onsubmit="submitNewUser(event)">
+            <div class="form-group">
+                <label class="form-label">Nom</label>
+                <input type="text" class="form-input" name="nom" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Prénom</label>
+                <input type="text" class="form-input" name="prenom" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Rôle</label>
+                <select class="form-select" name="role_id" required>
+                    <option value="">Sélectionner un rôle</option>
+                    <option value="1">Administrateur</option>
+                    <option value="2">Médecin</option>
+                    <option value="3">Technicien</option>
+                    <option value="4">Patient</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Service</label>
+                <select class="form-select" name="service_id" required>
+                    <option value="">Sélectionner un service</option>
+                    <option value="1">Cardiologie</option>
+                    <option value="2">Pneumologie</option>
+                    <option value="3">Endocrinologie</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 20px;">
+                <i class="fas fa-user-plus"></i>
+                Créer l'Utilisateur
+            </button>
+        </form>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
-<!-- jQuery first, then Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="{{ asset('js/admin-navigation.js') }}"></script>
 <script>
-$(document).ready(function() {
-    // Initialisation des onglets Bootstrap
-    var tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
-    tabEls.forEach(function(tabEl) {
-        tabEl.addEventListener('click', function (event) {
-            event.preventDefault();
-            var tab = new bootstrap.Tab(this);
-            tab.show();
-        });
+    // Initialisation de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Définir la date/heure actuelle dans le formulaire de saisie manuelle
+        const timestampInput = document.querySelector('input[name="timestamp"]');
+        if (timestampInput) {
+            const now = new Date();
+            timestampInput.value = now.toISOString().slice(0, 16);
+        }
+
+        // Animation d'entrée pour les cartes
+        animateCards();
     });
 
-    // Gestion de la force du mot de passe
-    const passwordInput = document.getElementById('newPassword');
-    if(passwordInput) {
-        passwordInput.addEventListener('input', function() {
-            const strength = calculatePasswordStrength(this.value);
-            const progressBar = document.querySelector('.password-strength .progress-bar');
-            const strengthText = document.getElementById('passwordStrength');
-            
-            if (strength < 25) {
-                progressBar.className = 'progress-bar bg-danger';
-                progressBar.style.width = '25%';
-                strengthText.textContent = 'Très faible';
-            } else if (strength < 50) {
-                progressBar.className = 'progress-bar bg-warning';
-                progressBar.style.width = '50%';
-                strengthText.textContent = 'Faible';
-            } else if (strength < 75) {
-                progressBar.className = 'progress-bar bg-info';
-                progressBar.style.width = '75%';
-                strengthText.textContent = 'Moyen';
+    // Gestion des capteurs
+    function toggleSensor(sensorId, isActive) {
+        const status = isActive ? 'activer' : 'désactiver';
+        
+        if (confirm(`Êtes-vous sûr de vouloir ${status} ce capteur ?`)) {
+            // Simulation de l'appel API
+            fetch(`/api/sensors/${sensorId}/toggle`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ active: isActive })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`Capteur ${status} avec succès`, 'success');
+                    updateSensorStatus(sensorId, isActive);
+                } else {
+                    showNotification('Erreur lors de la modification du capteur', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showNotification('Erreur de connexion', 'error');
+            });
+        }
+    }
+
+    function configureSensor(sensorId) {
+        window.location.href = `/sensors/${sensorId}/configure`;
+    }
+
+    function updateSensorStatus(sensorId, isActive) {
+        const sensorItem = document.querySelector(`input[onchange*="${sensorId}"]`).closest('.sensor-item');
+        const statusElement = sensorItem.querySelector('.sensor-status');
+        
+        if (isActive) {
+            statusElement.textContent = 'Actif';
+            statusElement.className = 'sensor-status active';
+        } else {
+            statusElement.textContent = 'Inactif';
+            statusElement.className = 'sensor-status inactive';
+        }
+    }
+
+    // Gestion de la saisie manuelle
+    function updateMeasurementFields(type) {
+        const valueFields = document.getElementById('valueFields');
+        const bloodPressureFields = document.getElementById('bloodPressureFields');
+        
+        if (type === 'blood_pressure') {
+            valueFields.style.display = 'none';
+            bloodPressureFields.style.display = 'block';
+        } else {
+            valueFields.style.display = 'block';
+            bloodPressureFields.style.display = 'none';
+        }
+    }
+
+    function submitManualData(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        fetch('/api/manual-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showNotification('Données enregistrées avec succès', 'success');
+                event.target.reset();
+                // Remettre la date/heure actuelle
+                document.querySelector('input[name="timestamp"]').value = new Date().toISOString().slice(0, 16);
             } else {
-                progressBar.className = 'progress-bar bg-success';
-                progressBar.style.width = '100%';
-                strengthText.textContent = 'Fort';
+                showNotification('Erreur lors de l\'enregistrement', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showNotification('Erreur de connexion', 'error');
+        });
+    }
+
+    // Gestion des modales
+    function openAddUserModal() {
+        document.getElementById('addUserModal').style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function submitNewUser(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        fetch('/admin/utilisateurs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showNotification('Utilisateur créé avec succès', 'success');
+                closeModal('addUserModal');
+                event.target.reset();
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(result.message || 'Erreur lors de la création', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showNotification('Erreur de connexion', 'error');
+        });
+    }
+
+    // Actions système
+    function manageRoles() {
+        window.location.href = '/admin/roles';
+    }
+
+    function viewInactiveUsers() {
+        window.location.href = '/admin/utilisateurs?status=inactive';
+    }
+
+    function viewSensorDiagnostics() {
+        window.location.href = '/admin/sensors/diagnostics';
+    }
+
+
+    // Actions rapides
+    function viewRecentAlerts() {
+        window.location.href = '/alerts?recent=1';
+    }
+
+    function generateReport() {
+        window.location.href = '/admin/reports/generate';
+    }
+
+    function systemBackup() {
+        if (confirm('Créer une sauvegarde système ?')) {
+            showNotification('Sauvegarde en cours...', 'info');
+        }
+    }
+
+    function viewStatistics() {
+        window.location.href = '/admin/statistics';
+    }
+
+    // Utilitaires
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        switch(type) {
+            case 'success':
+                notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                break;
+            case 'error':
+                notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                break;
+            case 'info':
+                notification.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+                break;
+        }
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 4000);
+    }
+
+    function animateCards() {
+        const cards = document.querySelectorAll('.section-card, .stat-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }
+
+    // Fermer les modales en cliquant à l'extérieur
+    window.onclick = function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
             }
         });
     }
 
-    function calculatePasswordStrength(password) {
-        let strength = 0;
-        
-        // Longueur
-        if (password.length >= 8) strength += 25;
-        
-        // Majuscule
-        if (/[A-Z]/.test(password)) strength += 25;
-        
-        // Chiffre
-        if (/[0-9]/.test(password)) strength += 25;
-        
-        // Caractère spécial
-        if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-        
-        return strength;
+    // Fonction générique pour naviguer vers les pages système
+function navigateToSystemPage(page) {
+    const routes = {
+        'server-config': '/admin/system/server-config',
+        'logs': '/admin/system/logs',
+        'maintenance': '/admin/system/maintenance',
+        'export-data': '/admin/system/export-data'
+    };
+    
+    if (routes[page]) {
+        window.location.href = routes[page];
+    } else {
+        console.error('Page système inconnue:', page);
+    }
+}
+
+// Event listeners pour les boutons de navigation système
+document.addEventListener('DOMContentLoaded', function() {
+    // Bouton Configuration Serveur
+    const serverConfigBtn = document.querySelector('[data-action="server-config"]');
+    if (serverConfigBtn) {
+        serverConfigBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigateToSystemPage('server-config');
+        });
+    }
+    
+    // Bouton Logs Système
+    const logsBtn = document.querySelector('[data-action="system-logs"]');
+    if (logsBtn) {
+        logsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigateToSystemPage('logs');
+        });
+    }
+    
+    // Bouton Maintenance
+    const maintenanceBtn = document.querySelector('[data-action="maintenance"]');
+    if (maintenanceBtn) {
+        maintenanceBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigateToSystemPage('maintenance');
+        });
+    }
+    
+    // Bouton Export Données
+    const exportBtn = document.querySelector('[data-action="export-data"]');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigateToSystemPage('export-data');
+        });
     }
 });
+
+    // Ajouter les styles d'animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 @endsection

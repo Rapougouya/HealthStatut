@@ -3,10 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AlertController;
-use App\Http\Controllers\SensorController;
+use App\Http\Controllers\CapteurController;
 use App\Http\Controllers\Api\VitalSignsController;
 use App\Http\Controllers\Api\PatientController as ApiPatientController;
-use App\Http\Controllers\Api\SensorController as ApiSensorController;
+use App\Http\Controllers\Api\CapteurController as ApiCapteurController;
 use App\Http\Controllers\Api\AlertController as ApiAlertController;
 use App\Http\Controllers\Api\AlertSettingsController;
 use App\Http\Controllers\AlertManagementController;
@@ -24,14 +24,14 @@ use App\Http\Controllers\AlertManagementController;
 // Routes d'API protégées par authentification
 Route::middleware('auth:sanctum')->group(function () {
     // Routes pour les patients
-    Route::apiResource('patients', ApiPatientController::class);
-    Route::get('/patients-stats', [ApiPatientController::class, 'stats']);
+    // Route::apiResource('patients', ApiPatientController::class);
+    // Route::get('/patients-stats', [ApiPatientController::class, 'stats']);
     
     // Routes pour les capteurs
-    Route::apiResource('sensors', ApiSensorController::class);
-    Route::post('/sensors/{sensor}/data', [ApiSensorController::class, 'receiveData']);
-    Route::get('/sensors/{sensor}/data', [ApiSensorController::class, 'getData']);
-    Route::get('/sensors-stats', [ApiSensorController::class, 'stats']);
+    Route::apiResource('sensors', ApiCapteurController::class);
+    Route::post('/sensors/{sensor}/data', [ApiCapteurController::class, 'receiveData']);
+    Route::get('/sensors/{sensor}/data', [ApiCapteurController::class, 'getData']);
+    Route::get('/sensors-stats', [ApiCapteurController::class, 'stats']);
     
     // Routes pour les alertes
     Route::apiResource('alerts', ApiAlertController::class);

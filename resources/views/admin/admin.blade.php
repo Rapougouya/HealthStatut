@@ -16,7 +16,7 @@
         <button class="tab-btn" data-tab="roles">
             <i class="fas fa-user-tag"></i> Rôles et Permissions
         </button>
-        <button class="tab-btn" data-tab="departments">
+        <button class="tab-btn" data-tab="services">
             <i class="fas fa-hospital"></i> Services
         </button>
         <button class="tab-btn" data-tab="logs">
@@ -40,11 +40,25 @@
                 </div>
             </div>
             <div class="card-content">
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 <div class="table-container">
                     <table class="admin-table users-table">
                         <thead>
                             <tr>
-                                <th>Nom</th>
+                                <th>Utilisateur</th>
                                 <th>Email</th>
                                 <th>Rôle</th>
                                 <th>Service</th>
@@ -54,101 +68,101 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($users ?? [] as $user)
+                            @forelse($users as $user)
                             <tr>
                                 <td>
                                     <div class="user-info-cell">
                                         <div class="user-avatar">
-                                            <img src="{{ $user->avatar ?? asset('lovable-uploads/3bec0184-d9fb-47a0-b398-880496412872.png') }}" alt="User">
+                                            @if($user->avatar)
+                                                <img src="{{ Storage::url($user->avatar) }}" alt="{{ $user->nom_complet }}">
+                                            @else
+                                                <div class="avatar-placeholder">
+                                                    {{ strtoupper(substr($user->prenom, 0, 1) . substr($user->nom, 0, 1)) }}
+                                                </div>
+                                            @endif
                                         </div>
                                         <div class="user-details">
-                                            <div class="user-name">{{ $user->name ?? 'Dr. Ahmed Benali' }}</div>
-                                            <div class="user-id">ID: {{ $user->id_number ?? 'MED-001' }}</div>
+                                            <div class="user-name">{{ $user->nom_complet }}</div>
+                                            <div class="user-id">ID: {{ $user->id }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ $user->email ?? 'ahmed.benali@example.com' }}</td>
-                                <td><span class="badge role-badge {{ $user->role_class ?? 'admin' }}">{{ $user->role_name ?? 'Administrateur' }}</span></td>
-                                <td>{{ $user->department ?? 'Cardiologie' }}</td>
-                                <td><span class="badge status-badge {{ $user->status ?? 'active' }}">{{ $user->status_label ?? 'Actif' }}</span></td>
-                                <td>{{ $user->last_login ?? 'Aujourd\'hui à 09:45' }}</td>
+                                <td>{{ $user->email }}</td>
+                                <td>
+                                    <span class="badge role-badge role-{{ $user->role->nom ?? 'unknown' }}">
+                                        {{ ucfirst($user->role->nom ?? 'Non défini') }}
+                                    </span>
+                                </td>
+                                <td>{{ $user->service->name ?? 'Non assigné' }}</td>
+                                <td>
+                                    <span class="badge status-badge status-{{ $user->statut }}">
+                                        {{ ucfirst($user->statut) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($user->derniere_connexion)
+                                        {{ $user->derniere_connexion->format('d/m/Y H:i') }}
+                                    @else
+                                        <span class="text-muted">Jamais connecté</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a href="{{ route('admin.users.edit', $user->id ?? 1) }}" class="icon-btn" title="Éditer"><i class="fas fa-edit"></i></a>
-                                        <button class="icon-btn" data-id="{{ $user->id ?? 1 }}" data-action="permissions" title="Permissions"><i class="fas fa-key"></i></button>
-                                        <button class="icon-btn" data-id="{{ $user->id ?? 1 }}" data-action="reset-password" title="Réinitialiser mot de passe"><i class="fas fa-lock"></i></button>
-                                        @if($user->status ?? 'active' == 'active')
-                                        <button class="icon-btn delete" data-id="{{ $user->id ?? 1 }}" data-action="deactivate" title="Désactiver"><i class="fas fa-user-slash"></i></button>
-                                        @else
-                                        <button class="icon-btn activate" data-id="{{ $user->id ?? 1 }}" data-action="activate" title="Activer"><i class="fas fa-user-check"></i></button>
-                                        @endif
+                                        <button class="icon-btn edit-user" 
+                                                data-id="{{ $user->id }}" 
+                                                data-nom="{{ $user->nom }}"
+                                                data-prenom="{{ $user->prenom }}"
+                                                data-email="{{ $user->email }}"
+                                                data-role="{{ $user->role_id }}"
+                                                data-service="{{ $user->service_id }}"
+                                                title="Éditer">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        
+                                        <form method="POST" action="{{ route('utilisateurs.reset-password', $user) }}" style="display: inline;">
+                                            @csrf
+                                            <button type="submit" class="icon-btn reset-password" 
+                                                    title="Réinitialiser mot de passe"
+                                                    onclick="return confirm('Réinitialiser le mot de passe de {{ $user->nom_complet }} ?')">
+                                                <i class="fas fa-lock"></i>
+                                            </button>
+                                        </form>
+
+                                        <form method="POST" action="{{ route('utilisateurs.toggle-status', $user) }}" style="display: inline;">
+                                            @csrf
+                                            @if($user->statut === 'actif')
+                                                <button type="submit" class="icon-btn deactivate" 
+                                                        title="Désactiver"
+                                                        onclick="return confirm('Désactiver {{ $user->nom_complet }} ?')">
+                                                    <i class="fas fa-user-slash"></i>
+                                                </button>
+                                            @else
+                                                <button type="submit" class="icon-btn activate" 
+                                                        title="Activer"
+                                                        onclick="return confirm('Activer {{ $user->nom_complet }} ?')">
+                                                    <i class="fas fa-user-check"></i>
+                                                </button>
+                                            @endif
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
-                            @endforeach
-                            @if(empty($users))
-                                <tr>
-                                    <td>
-                                        <div class="user-info-cell">
-                                            <div class="user-avatar">
-                                                <img src="{{ asset('lovable-uploads/3bec0184-d9fb-47a0-b398-880496412872.png') }}" alt="User">
-                                            </div>
-                                            <div class="user-details">
-                                                <div class="user-name">Dr. Ahmed Benali</div>
-                                                <div class="user-id">ID: MED-001</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>ahmed.benali@example.com</td>
-                                    <td><span class="badge role-badge admin">Administrateur</span></td>
-                                    <td>Cardiologie</td>
-                                    <td><span class="badge status-badge active">Actif</span></td>
-                                    <td>Aujourd'hui à 09:45</td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="icon-btn" title="Éditer"><i class="fas fa-edit"></i></button>
-                                            <button class="icon-btn" title="Permissions"><i class="fas fa-key"></i></button>
-                                            <button class="icon-btn" title="Réinitialiser mot de passe"><i class="fas fa-lock"></i></button>
-                                            <button class="icon-btn delete" title="Désactiver"><i class="fas fa-user-slash"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <!-- Exemple d'utilisateurs supplémentaires -->
-                                <tr>
-                                    <td>
-                                        <div class="user-info-cell">
-                                            <div class="user-avatar">
-                                                <img src="{{ asset('lovable-uploads/3bec0184-d9fb-47a0-b398-880496412872.png') }}" alt="User">
-                                            </div>
-                                            <div class="user-details">
-                                                <div class="user-name">Dr. Sophie Martin</div>
-                                                <div class="user-id">ID: MED-002</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>sophie.martin@example.com</td>
-                                    <td><span class="badge role-badge doctor">Médecin</span></td>
-                                    <td>Pédiatrie</td>
-                                    <td><span class="badge status-badge active">Actif</span></td>
-                                    <td>Hier à 16:23</td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="icon-btn" title="Éditer"><i class="fas fa-edit"></i></button>
-                                            <button class="icon-btn" title="Permissions"><i class="fas fa-key"></i></button>
-                                            <button class="icon-btn" title="Réinitialiser mot de passe"><i class="fas fa-lock"></i></button>
-                                            <button class="icon-btn delete" title="Désactiver"><i class="fas fa-user-slash"></i></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <!-- Plus d'exemples d'utilisateurs -->
-                            @endif
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <div class="empty-state">
+                                        <i class="fas fa-users"></i>
+                                        <h3>Aucun utilisateur trouvé</h3>
+                                        <p>Commencez par ajouter votre premier utilisateur</p>
+                                        <button class="action-btn primary" onclick="document.getElementById('add-user-btn').click()">
+                                            <i class="fas fa-user-plus"></i> Ajouter un utilisateur
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
-                </div>
-                <div class="pagination">
-                    <button class="pagination-btn" data-action="prev"><i class="fas fa-chevron-left"></i></button>
-                    <span class="page-info">Page {{ $users_page ?? 1 }} sur {{ $users_total_pages ?? 3 }}</span>
-                    <button class="pagination-btn" data-action="next"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
         </div>
@@ -159,223 +173,84 @@
         <div class="admin-card">
             <div class="card-header">
                 <h2><i class="fas fa-user-tag"></i> Rôles et permissions</h2>
-                <button class="action-btn primary" id="add-role-btn">
-                    <i class="fas fa-plus"></i> Nouveau rôle
-                </button>
             </div>
             <div class="card-content">
-                <div class="roles-container">
-                    <div class="roles-list">
-                        @foreach($roles ?? [] as $index => $role)
-                        <div class="role-item {{ $index == 0 ? 'active' : '' }}" data-role-id="{{ $role->id ?? $index+1 }}">
-                            <div class="role-name">
-                                <i class="{{ $role->icon ?? 'fas fa-user-shield' }}"></i>
-                                <span>{{ $role->name ?? 'Rôle par défaut' }}</span>
-                            </div>
-                            <div class="role-user-count">
-                                <span>{{ $role->users_count ?? '0' }} utilisateurs</span>
-                            </div>
+                <div class="roles-grid">
+                    @forelse($roles as $role)
+                    <div class="role-card">
+                        <div class="role-header">
+                            <h3>{{ ucfirst($role->nom) }}</h3>
+                            <span class="role-count">{{ $role->users->count() }} utilisateurs</span>
                         </div>
-                        @endforeach
-                        @if(empty($roles))
-                            <div class="role-item active" data-role-id="1">
-                                <div class="role-name">
-                                    <i class="fas fa-user-shield"></i>
-                                    <span>Administrateur</span>
-                                </div>
-                                <div class="role-user-count">
-                                    <span>3 utilisateurs</span>
-                                </div>
-                            </div>
-                            <div class="role-item" data-role-id="2">
-                                <div class="role-name">
-                                    <i class="fas fa-user-md"></i>
-                                    <span>Médecin</span>
-                                </div>
-                                <div class="role-user-count">
-                                    <span>12 utilisateurs</span>
-                                </div>
-                            </div>
-                            <!-- Exemple de rôles supplémentaires -->
-                            <div class="role-item" data-role-id="3">
-                                <div class="role-name">
-                                    <i class="fas fa-user-nurse"></i>
-                                    <span>Infirmier/Infirmière</span>
-                                </div>
-                                <div class="role-user-count">
-                                    <span>24 utilisateurs</span>
-                                </div>
-                            </div>
-                            <!-- Plus d'exemples de rôles -->
-                        @endif
-                    </div>
-                    <div class="permissions-section">
-                        <div class="permissions-header">
-                            <h3>Permissions pour: <span id="selected-role-name">{{ $roles[0]->name ?? 'Administrateur' }}</span></h3>
-                            <button class="action-btn" id="edit-permissions-btn">
-                                <i class="fas fa-edit"></i> Modifier les permissions
-                            </button>
+                        <div class="role-description">
+                            {{ $role->description }}
                         </div>
-                        <div class="permissions-grid">
-                            @foreach($permission_categories ?? [] as $category)
-                            <div class="permission-category">
-                                <h4>{{ $category->name ?? 'Catégorie' }}</h4>
-                                <div class="permission-items">
-                                    @foreach($category->permissions ?? [] as $permission)
-                                    <div class="permission-item">
-                                        <span class="permission-label">{{ $permission->name ?? 'Permission' }}</span>
-                                        <span class="permission-access {{ $permission->level ?? 'full' }}">{{ $permission->level_label ?? 'Total' }}</span>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
+                        <div class="role-users">
+                            @foreach($role->users->take(3) as $user)
+                                <span class="user-pill">{{ $user->nom_complet }}</span>
                             @endforeach
-                            @if(empty($permission_categories))
-                                <div class="permission-category">
-                                    <h4>Administration</h4>
-                                    <div class="permission-items">
-                                        <div class="permission-item">
-                                            <span class="permission-label">Gestion des utilisateurs</span>
-                                            <span class="permission-access full">Total</span>
-                                        </div>
-                                        <div class="permission-item">
-                                            <span class="permission-label">Gestion des rôles</span>
-                                            <span class="permission-access full">Total</span>
-                                        </div>
-                                        <div class="permission-item">
-                                            <span class="permission-label">Configuration système</span>
-                                            <span class="permission-access full">Total</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Catégories de permissions supplémentaires -->
-                                <div class="permission-category">
-                                    <h4>Patients</h4>
-                                    <div class="permission-items">
-                                        <div class="permission-item">
-                                            <span class="permission-label">Ajouter/Modifier patients</span>
-                                            <span class="permission-access full">Total</span>
-                                        </div>
-                                        <div class="permission-item">
-                                            <span class="permission-label">Voir dossiers patients</span>
-                                            <span class="permission-access full">Total</span>
-                                        </div>
-                                        <div class="permission-item">
-                                            <span class="permission-label">Supprimer patients</span>
-                                            <span class="permission-access full">Total</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Plus de catégories de permissions -->
+                            @if($role->users->count() > 3)
+                                <span class="user-pill more">+{{ $role->users->count() - 3 }} autres</span>
                             @endif
                         </div>
                     </div>
+                    @empty
+                    <div class="empty-state">
+                        <i class="fas fa-user-tag"></i>
+                        <h3>Aucun rôle configuré</h3>
+                        <p>Les rôles définissent les permissions des utilisateurs</p>
+                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Departments Tab Content -->
-    <div class="tab-content" id="departments-tab">
+    <!-- Services Tab Content -->
+    <div class="tab-content" id="services-tab">
         <div class="admin-card">
             <div class="card-header">
                 <h2><i class="fas fa-hospital"></i> Gestion des services</h2>
-                <button class="action-btn primary" id="add-department-btn">
+                <button class="action-btn primary" id="add-service-btn">
                     <i class="fas fa-plus"></i> Ajouter un service
                 </button>
             </div>
             <div class="card-content">
-                <div class="departments-grid">
-                    @foreach($departments ?? [] as $department)
-                    <div class="department-card" data-id="{{ $department->id ?? 1 }}">
-                        <div class="department-card-header">
-                            <h3>{{ $department->name ?? 'Service' }}</h3>
-                            <div class="department-actions">
-                                <button class="icon-btn" data-id="{{ $department->id ?? 1 }}" data-action="edit-department" title="Éditer"><i class="fas fa-edit"></i></button>
-                                <button class="icon-btn delete" data-id="{{ $department->id ?? 1 }}" data-action="delete-department" title="Supprimer"><i class="fas fa-trash"></i></button>
+                <div class="services-grid">
+                    @forelse($services as $service)
+                    <div class="service-card">
+                        <div class="service-header">
+                            <h3>{{ $service->name }}</h3>
+                            <div class="service-actions">
+                                <button class="icon-btn edit-service" 
+                                        data-id="{{ $service->id }}"
+                                        data-name="{{ $service->name }}"
+                                        data-description="{{ $service->description }}"
+                                        title="Éditer">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                             </div>
                         </div>
-                        <div class="department-info">
-                            <div class="info-item">
+                        <div class="service-description">
+                            {{ $service->description ?? 'Aucune description' }}
+                        </div>
+                        <div class="service-stats">
+                            <div class="stat-item">
                                 <i class="fas fa-users"></i>
-                                <span>{{ $department->users_count ?? '0' }} utilisateurs</span>
+                                <span>{{ $service->users->count() }} utilisateurs</span>
                             </div>
-                            <div class="info-item">
-                                <i class="fas fa-user-injured"></i>
-                                <span>{{ $department->patients_count ?? '0' }} patients</span>
-                            </div>
-                            <div class="info-item">
-                                <i class="fas fa-heartbeat"></i>
-                                <span>{{ $department->sensors_count ?? '0' }} capteurs</span>
-                            </div>
-                        </div>
-                        <div class="department-footer">
-                            <a href="{{ route('admin.departments.manage', $department->id ?? 1) }}" class="action-btn full-width">
-                                <i class="fas fa-cog"></i> Gérer
-                            </a>
                         </div>
                     </div>
-                    @endforeach
-                    @if(empty($departments))
-                        <div class="department-card" data-id="1">
-                            <div class="department-card-header">
-                                <h3>Cardiologie</h3>
-                                <div class="department-actions">
-                                    <button class="icon-btn" title="Éditer"><i class="fas fa-edit"></i></button>
-                                    <button class="icon-btn delete" title="Supprimer"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                            <div class="department-info">
-                                <div class="info-item">
-                                    <i class="fas fa-users"></i>
-                                    <span>15 utilisateurs</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-user-injured"></i>
-                                    <span>42 patients</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-heartbeat"></i>
-                                    <span>28 capteurs</span>
-                                </div>
-                            </div>
-                            <div class="department-footer">
-                                <button class="action-btn full-width">
-                                    <i class="fas fa-cog"></i> Gérer
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Exemple de services supplémentaires -->
-                        <div class="department-card" data-id="2">
-                            <div class="department-card-header">
-                                <h3>Pédiatrie</h3>
-                                <div class="department-actions">
-                                    <button class="icon-btn" title="Éditer"><i class="fas fa-edit"></i></button>
-                                    <button class="icon-btn delete" title="Supprimer"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
-                            <div class="department-info">
-                                <div class="info-item">
-                                    <i class="fas fa-users"></i>
-                                    <span>12 utilisateurs</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-user-injured"></i>
-                                    <span>36 patients</span>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-heartbeat"></i>
-                                    <span>20 capteurs</span>
-                                </div>
-                            </div>
-                            <div class="department-footer">
-                                <button class="action-btn full-width">
-                                    <i class="fas fa-cog"></i> Gérer
-                                </button>
-                            </div>
-                        </div>
-                        <!-- Plus d'exemples de services -->
-                    @endif
+                    @empty
+                    <div class="empty-state">
+                        <i class="fas fa-hospital"></i>
+                        <h3>Aucun service configuré</h3>
+                        <p>Les services organisent les utilisateurs par département</p>
+                        <button class="action-btn primary" onclick="document.getElementById('add-service-btn').click()">
+                            <i class="fas fa-plus"></i> Ajouter un service
+                        </button>
+                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -386,110 +261,38 @@
         <div class="admin-card">
             <div class="card-header">
                 <h2><i class="fas fa-clipboard-list"></i> Journaux d'activité</h2>
-                <div class="header-actions">
-                    <div class="logs-filter">
-                        <select id="log-type-filter">
-                            <option value="all">Tous les types</option>
-                            <option value="login">Connexions</option>
-                            <option value="patient">Patients</option>
-                            <option value="alert">Alertes</option>
-                            <option value="config">Configuration</option>
-                        </select>
-                        <select id="log-user-filter">
-                            <option value="all">Tous les utilisateurs</option>
-                            @foreach($users ?? [] as $user)
-                            <option value="{{ $user->id ?? 1 }}">{{ $user->name ?? 'Utilisateur' }}</option>
-                            @endforeach
-                            @if(empty($users))
-                            <option value="1">Dr. Ahmed Benali</option>
-                            <option value="2">Dr. Sophie Martin</option>
-                            <option value="3">Isabelle Dubois</option>
-                            @endif
-                        </select>
-                        <button class="action-btn" id="filter-logs-btn">
-                            <i class="fas fa-filter"></i> Filtrer
-                        </button>
-                    </div>
-                    <button class="action-btn" id="export-logs-btn">
-                        <i class="fas fa-download"></i> Exporter
-                    </button>
-                </div>
             </div>
             <div class="card-content">
-                <div class="table-container">
-                    <table class="admin-table logs-table">
-                        <thead>
-                            <tr>
-                                <th>Horodatage</th>
-                                <th>Utilisateur</th>
-                                <th>Type</th>
-                                <th>Action</th>
-                                <th>Détails</th>
-                                <th>Adresse IP</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($logs ?? [] as $log)
-                            <tr>
-                                <td>{{ $log->timestamp ?? now()->format('d/m/Y H:i:s') }}</td>
-                                <td>{{ $log->user_name ?? 'Utilisateur' }}</td>
-                                <td><span class="badge log-badge {{ $log->type ?? 'login' }}">{{ $log->type_label ?? 'Action' }}</span></td>
-                                <td>{{ $log->action ?? 'Action effectuée' }}</td>
-                                <td>{{ $log->details ?? 'Détails de l\'action' }}</td>
-                                <td>{{ $log->ip_address ?? '127.0.0.1' }}</td>
-                            </tr>
-                            @endforeach
-                            @if(empty($logs))
-                                <tr>
-                                    <td>24/04/2023 09:45:12</td>
-                                    <td>Dr. Ahmed Benali</td>
-                                    <td><span class="badge log-badge login">Connexion</span></td>
-                                    <td>Connexion réussie</td>
-                                    <td>Navigateur: Chrome, OS: Windows</td>
-                                    <td>192.168.1.105</td>
-                                </tr>
-                                <!-- Exemples de logs supplémentaires -->
-                                <tr>
-                                    <td>24/04/2023 09:48:32</td>
-                                    <td>Dr. Ahmed Benali</td>
-                                    <td><span class="badge log-badge patient">Patient</span></td>
-                                    <td>Dossier consulté</td>
-                                    <td>ID Patient: P-1234, Jean Dupont</td>
-                                    <td>192.168.1.105</td>
-                                </tr>
-                                <!-- Plus d'exemples de logs -->
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
-                <div class="pagination">
-                    <button class="pagination-btn" data-action="prev"><i class="fas fa-chevron-left"></i></button>
-                    <span class="page-info">Page {{ $logs_page ?? 1 }} sur {{ $logs_total_pages ?? 15 }}</span>
-                    <button class="pagination-btn" data-action="next"><i class="fas fa-chevron-right"></i></button>
+                <div class="logs-placeholder">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Journaux d'activité</h3>
+                    <p>Cette fonctionnalité sera disponible prochainement</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modals for Add/Edit User, Role, Department, etc. -->
+<!-- Modal pour ajouter/modifier un utilisateur -->
 <div class="modal" id="userModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Ajouter un utilisateur</h3>
+            <h3 id="modal-title">Ajouter un utilisateur</h3>
             <button class="close-modal">&times;</button>
         </div>
         <div class="modal-body">
-            <form id="userForm" method="POST" action="{{ route('admin.users.store') }}">
+            <form id="userForm" method="POST">
                 @csrf
+                <div id="method-field"></div>
+                
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="user-first-name">Prénom</label>
-                        <input type="text" id="user-first-name" name="first_name" placeholder="Prénom" required>
+                        <label for="user-nom">Nom</label>
+                        <input type="text" id="user-nom" name="nom" placeholder="Nom" required>
                     </div>
                     <div class="form-group">
-                        <label for="user-last-name">Nom</label>
-                        <input type="text" id="user-last-name" name="last_name" placeholder="Nom" required>
+                        <label for="user-prenom">Prénom</label>
+                        <input type="text" id="user-prenom" name="prenom" placeholder="Prénom" required>
                     </div>
                     <div class="form-group">
                         <label for="user-email">Email</label>
@@ -499,41 +302,22 @@
                         <label for="user-role">Rôle</label>
                         <select id="user-role" name="role_id" required>
                             <option value="">Sélectionner un rôle</option>
-                            @foreach($roles ?? [] as $role)
-                            <option value="{{ $role->id ?? '' }}">{{ $role->name ?? '' }}</option>
+                            @foreach($roles as $role)
+                            <option value="{{ $role->id }}">{{ ucfirst($role->nom) }}</option>
                             @endforeach
-                            @if(empty($roles))
-                            <option value="admin">Administrateur</option>
-                            <option value="doctor">Médecin</option>
-                            <option value="nurse">Infirmier/Infirmière</option>
-                            <option value="technician">Technicien</option>
-                            <option value="secretary">Secrétaire médical</option>
-                            @endif
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="user-department">Service</label>
-                        <select id="user-department" name="department_id" required>
+                        <label for="user-service">Service</label>
+                        <select id="user-service" name="service_id" required>
                             <option value="">Sélectionner un service</option>
-                            @foreach($departments ?? [] as $department)
-                            <option value="{{ $department->id ?? '' }}">{{ $department->name ?? '' }}</option>
+                            @foreach($services as $service)
+                            <option value="{{ $service->id }}">{{ $service->name }}</option>
                             @endforeach
-                            @if(empty($departments))
-                            <option value="cardio">Cardiologie</option>
-                            <option value="pediatrics">Pédiatrie</option>
-                            <option value="neurology">Neurologie</option>
-                            <option value="emergency">Urgences</option>
-                            @endif
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="user-status">Statut</label>
-                        <select id="user-status" name="status">
-                            <option value="active">Actif</option>
-                            <option value="inactive">Inactif</option>
                         </select>
                     </div>
                 </div>
+                
                 <input type="hidden" name="user_id" id="user-id" value="">
             </form>
         </div>
@@ -544,108 +328,170 @@
     </div>
 </div>
 
-<!-- Autres modals (Rôle, Service, etc.) selon les besoins -->
+<!-- Modal pour ajouter/modifier un service -->
+<div class="modal" id="serviceModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="service-modal-title">Ajouter un service</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="serviceForm" method="POST">
+                @csrf
+                <div id="service-method-field"></div>
+                
+                <div class="form-group">
+                    <label for="service-name">Nom du service</label>
+                    <input type="text" id="service-name" name="name" placeholder="Ex: Cardiologie" required>
+                </div>
+                <div class="form-group">
+                    <label for="service-description">Description</label>
+                    <textarea id="service-description" name="description" placeholder="Description du service" rows="3"></textarea>
+                </div>
+                
+                <input type="hidden" name="service_id" id="service-id" value="">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-btn" data-dismiss="modal">Annuler</button>
+            <button class="action-btn primary" id="save-service-btn">Ajouter</button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Gestion des onglets
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
-                
-                // Désactiver tous les onglets
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-                
-                // Activer l'onglet sélectionné
-                this.classList.add('active');
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
-        });
-        
-        // Gestion du modal utilisateur
-        const addUserBtn = document.getElementById('add-user-btn');
-        const userModal = document.getElementById('userModal');
-        const closeModal = userModal.querySelector('.close-modal');
-        const cancelBtn = userModal.querySelector('.cancel-btn');
-        const saveUserBtn = document.getElementById('save-user-btn');
-        
-        function openUserModal() {
-            userModal.style.display = 'block';
-            document.getElementById('userForm').reset();
-            document.getElementById('user-id').value = '';
-            userModal.querySelector('.modal-header h3').textContent = 'Ajouter un utilisateur';
-            saveUserBtn.textContent = 'Ajouter';
-        }
-        
-        function closeUserModal() {
-            userModal.style.display = 'none';
-        }
-        
-        if (addUserBtn) {
-            addUserBtn.addEventListener('click', openUserModal);
-        }
-        
-        if (closeModal) {
-            closeModal.addEventListener('click', closeUserModal);
-        }
-        
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', closeUserModal);
-        }
-        
-        if (saveUserBtn) {
-            saveUserBtn.addEventListener('click', function() {
-                document.getElementById('userForm').submit();
-            });
-        }
-        
-        // Édition d'utilisateur
-        const editUserBtns = document.querySelectorAll('.action-buttons .icon-btn[title="Éditer"]');
-        editUserBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const userId = this.closest('tr').querySelector('.user-info-cell .user-id').textContent.replace('ID: ', '');
-                const userName = this.closest('tr').querySelector('.user-info-cell .user-name').textContent;
-                
-                // Dans une vraie application, vous feriez un appel AJAX pour obtenir les données de l'utilisateur
-                // Pour cet exemple, nous allons juste ouvrir le modal avec quelques données préremplies
-                userModal.querySelector('.modal-header h3').textContent = `Modifier l'utilisateur: ${userName}`;
-                saveUserBtn.textContent = 'Enregistrer';
-                document.getElementById('user-id').value = userId;
-                
-                // Afficher le modal
-                userModal.style.display = 'block';
-            });
-        });
-        
-        // Gestion des rôles
-        const roleItems = document.querySelectorAll('.role-item');
-        roleItems.forEach(item => {
-            item.addEventListener('click', function() {
-                roleItems.forEach(r => r.classList.remove('active'));
-                this.classList.add('active');
-                
-                const roleName = this.querySelector('.role-name span').textContent;
-                document.getElementById('selected-role-name').textContent = roleName;
-                
-                // Dans une vraie application, vous feriez un appel AJAX pour charger les permissions du rôle
-            });
-        });
-        
-        // Prévenir les actions de suppression sans confirmation
-        const deleteButtons = document.querySelectorAll('.icon-btn.delete');
-        deleteButtons.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                if (!confirm('Êtes-vous sûr de vouloir effectuer cette action ?')) {
-                    e.preventDefault();
-                }
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des onglets
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
         });
     });
+    
+    // Gestion du modal utilisateur
+    const userModal = document.getElementById('userModal');
+    const addUserBtn = document.getElementById('add-user-btn');
+    const saveUserBtn = document.getElementById('save-user-btn');
+    
+    // Ouvrir modal pour ajouter un utilisateur
+    addUserBtn?.addEventListener('click', function() {
+        document.getElementById('modal-title').textContent = 'Ajouter un utilisateur';
+        document.getElementById('userForm').action = "{{ route('utilisateurs.store') }}";
+        document.getElementById('method-field').innerHTML = '';
+        document.getElementById('userForm').reset();
+        document.getElementById('user-id').value = '';
+        saveUserBtn.textContent = 'Ajouter';
+        userModal.style.display = 'block';
+    });
+    
+    // Ouvrir modal pour modifier un utilisateur
+    document.querySelectorAll('.edit-user').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const userId = this.dataset.id;
+            document.getElementById('modal-title').textContent = 'Modifier l\'utilisateur';
+            document.getElementById('userForm').action = `/admin/utilisateurs/${userId}`;
+            document.getElementById('method-field').innerHTML = '@method("PUT")';
+            
+            // Pré-remplir le formulaire
+            document.getElementById('user-nom').value = this.dataset.nom;
+            document.getElementById('user-prenom').value = this.dataset.prenom;
+            document.getElementById('user-email').value = this.dataset.email;
+            document.getElementById('user-role').value = this.dataset.role;
+            document.getElementById('user-service').value = this.dataset.service;
+            document.getElementById('user-id').value = userId;
+            
+            saveUserBtn.textContent = 'Modifier';
+            userModal.style.display = 'block';
+        });
+    });
+    
+    // Gestion du modal service
+    const serviceModal = document.getElementById('serviceModal');
+    const addServiceBtn = document.getElementById('add-service-btn');
+    const saveServiceBtn = document.getElementById('save-service-btn');
+    
+    // Ouvrir modal pour ajouter un service
+    addServiceBtn?.addEventListener('click', function() {
+        document.getElementById('service-modal-title').textContent = 'Ajouter un service';
+        document.getElementById('serviceForm').action = "{{ route('services.store') }}";
+        document.getElementById('service-method-field').innerHTML = '';
+        document.getElementById('serviceForm').reset();
+        document.getElementById('service-id').value = '';
+        saveServiceBtn.textContent = 'Ajouter';
+        serviceModal.style.display = 'block';
+    });
+    
+    // Ouvrir modal pour modifier un service
+    document.querySelectorAll('.edit-service').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const serviceId = this.dataset.id;
+            document.getElementById('service-modal-title').textContent = 'Modifier le service';
+            document.getElementById('serviceForm').action = `/admin/services/${serviceId}`;
+            document.getElementById('service-method-field').innerHTML = '@method("PUT")';
+            
+            document.getElementById('service-name').value = this.dataset.name;
+            document.getElementById('service-description').value = this.dataset.description;
+            document.getElementById('service-id').value = serviceId;
+            
+            saveServiceBtn.textContent = 'Modifier';
+            serviceModal.style.display = 'block';
+        });
+    });
+    
+    // Fermer les modals
+    document.querySelectorAll('.close-modal, .cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            userModal.style.display = 'none';
+            serviceModal.style.display = 'none';
+        });
+    });
+    
+    // Soumettre les formulaires
+    saveUserBtn?.addEventListener('click', function() {
+        document.getElementById('userForm').submit();
+    });
+    
+    saveServiceBtn?.addEventListener('click', function() {
+        document.getElementById('serviceForm').submit();
+    });
+    
+    // Recherche d'utilisateurs
+    const userSearch = document.getElementById('user-search');
+    userSearch?.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const userRows = document.querySelectorAll('.users-table tbody tr');
+        
+        userRows.forEach(row => {
+            const userName = row.querySelector('.user-name')?.textContent.toLowerCase() || '';
+            const userEmail = row.cells[1]?.textContent.toLowerCase() || '';
+            
+            if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Auto-hide alerts
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        });
+    }, 5000);
+});
 </script>
 @endsection

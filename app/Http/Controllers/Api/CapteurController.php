@@ -12,7 +12,7 @@ use App\Http\Resources\SensorReadingResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-class SensorController extends Controller
+class CapteurController extends Controller
 {
     /**
      * Lister tous les capteurs

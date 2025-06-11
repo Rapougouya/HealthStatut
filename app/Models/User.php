@@ -78,10 +78,10 @@ class User extends Authenticatable
     /**
      * Get the service that the user belongs to.
      */
-    public function service()
-    {
-        return $this->belongsTo(Service::class);
-    }
+    public function services()
+   {
+       return $this->belongsToMany(Service::class, 'service_user', 'user_id', 'service_id');
+   }
 
     /**
      * Get the role that the user has.
